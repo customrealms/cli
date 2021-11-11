@@ -1,7 +1,3 @@
-before:
-  hooks:
-    - make setup
-    - go generate ./...
 project_name: customrealms-cli
 # release:
 #   github:
