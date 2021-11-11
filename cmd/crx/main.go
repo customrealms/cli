@@ -1,43 +1,29 @@
 package main
 
 import (
+	"fmt"
 	"os"
-	"strings"
-
-	"github.com/customrealms/cli/lib"
 )
 
-const TEMPLATE_JAR = "/Users/conner/Projects/customrealms/bukkit-runtime/target/bukkit-runtime-jar-with-dependencies.jar"
-const output = "/Users/conner/Desktop/mcserver/plugins/bukkit-runtime-jar-with-dependencies.jar"
+const VERSION = "0.1.0"
 
 func main() {
 
-	// Open the output file for the final JAR
-	file, err := os.Create(output)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	// Create a reader for the plugin source code
-	pluginCode := strings.NewReader("setInterval(() => console.log('YOOOOOO'), 3000)")
-
-	// Define the plugin.yml details for the plugin
-	pluginYml := lib.PluginYml{
-		Name:       "MyPlugin",
-		ApiVersion: "1.17",
-		Version:    "0.0.1",
-		Main:       "io.customrealms.MainPlugin",
+	// If there are no command line arguments
+	if len(os.Args) <= 1 {
+		fmt.Println("Missing command name: build, init")
+		os.Exit(1)
 	}
 
-	// Produce the final JAR file
-	if err := lib.CreateFinalJar(
-		file,
-		TEMPLATE_JAR,
-		pluginCode,
-		&pluginYml,
-	); err != nil {
-		panic(err)
+	// Get the operation string
+	switch os.Args[1] {
+	case "version":
+		fmt.Printf("customrealms-cli (crx) v%s\n", VERSION)
+	case "init":
+		fmt.Println("crx build ... is not yet implemented")
+		os.Exit(1)
+	case "build":
+		crxBuild()
 	}
 
 }
