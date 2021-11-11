@@ -1,14 +1,10 @@
 project_name: customrealms-cli
-# release:
-#   github:
-#     owner: customrealms
-#     name: cli
 builds:
   - id: customrealms-cli-darwin-amd64
     ldflags:
       - -s -w -X github.com/customrealms/cli/pkg/version.Version={{.Version}}
     binary: crx
-    main: ./main.go
+    main: ./cmd/crx/main.go
     env:
       - CGO_ENABLED=0
     goos:
@@ -18,7 +14,7 @@ builds:
   - id: customrealms-cli-linux-amd64
     ldflags:
       - -s -w -X github.com/customrealms/cli/pkg/version.Version={{.Version}}
-    main: ./main.go
+    main: ./cmd/crx/main.go
     binary: crx
     env:
       - CGO_ENABLED=0
@@ -29,7 +25,7 @@ builds:
   - id: customrealms-cli-windows-amd64
     ldflags:
       - -s -w -X github.com/customrealms/cli/pkg/version.Version={{.Version}}
-    main: ./main.go
+    main: ./cmd/crx/main.go
     binary: crx
     env:
       - CGO_ENABLED=0

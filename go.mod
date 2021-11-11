@@ -1,3 +1,3 @@
-module github.com/customrealms/crbuild
+module github.com/customrealms/cli
 
 go 1.17
