@@ -30,3 +30,13 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      -
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10
+      -
+        run: npm install
+      -
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}

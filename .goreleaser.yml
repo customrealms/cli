@@ -42,7 +42,7 @@ archives:
       amd64: amd64
 
 checksum:
-  name_template: "{{ .ProjectName }}checksums.txt"
+  name_template: "checksums.txt"
 snapshot:
   name_template: "{{ .Tag }}-next"
 changelog:
