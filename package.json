@@ -1,0 +1,27 @@
+{
+	"name": "@customrealms/cli",
+	"version": "0.0.1",
+	"description": "",
+	"scripts": {
+		"postinstall": "node postinstall.js install",
+		"preuninstall": "node postinstall.js uninstall"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/customrealms/cli.git"
+	},
+	"keywords": [],
+	"author": "Conner Douglass",
+	"license": "MIT",
+	"goBinary": {
+		"name": "crx",
+		"path": "./bin"
+	},
+	"files": [
+		"dist",
+		"postinstall.js"
+	],
+	"dependencies": {
+		"mkdirp": "^1.0.4"
+	}
+}

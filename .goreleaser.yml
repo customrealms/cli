@@ -1,0 +1,61 @@
+before:
+  hooks:
+    - make setup
+    - go generate ./...
+project_name: customrealms-cli
+# release:
+#   github:
+#     owner: customrealms
+#     name: cli
+builds:
+  - id: customrealms-cli-darwin-amd64
+    ldflags:
+      - -s -w -X github.com/customrealms/cli/pkg/version.Version={{.Version}}
+    binary: crx
+    main: ./main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    goarch:
+      - amd64
+  - id: customrealms-cli-linux-amd64
+    ldflags:
+      - -s -w -X github.com/customrealms/cli/pkg/version.Version={{.Version}}
+    main: ./main.go
+    binary: crx
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+  - id: customrealms-cli-windows-amd64
+    ldflags:
+      - -s -w -X github.com/customrealms/cli/pkg/version.Version={{.Version}}
+    main: ./main.go
+    binary: crx
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - amd64
+archives:
+  - replacements:
+      darwin: darwin
+      linux: linux
+      windows: windows
+      386: i386
+      amd64: amd64
+
+checksum:
+  name_template: "{{ .ProjectName }}checksums.txt"
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
