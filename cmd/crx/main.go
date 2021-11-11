@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/customrealms/cli/lib"
 )
@@ -25,10 +26,28 @@ func main() {
 	case "version":
 		fmt.Printf("customrealms-cli (crx) v%s\n", VERSION)
 	case "init":
-		fmt.Println("crx build ... is not yet implemented")
-		os.Exit(1)
+		crxInit()
 	case "build":
 		crxBuild()
+	}
+
+}
+
+func crxInit() {
+
+	var projectDir string
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	flag.StringVar(&projectDir, "p", cwd, "plugin project directory")
+
+	flag.CommandLine.Parse(os.Args[2:])
+
+	if err := lib.InitDir(projectDir, filepath.Base(projectDir)); err != nil {
+		panic(err)
 	}
 
 }
