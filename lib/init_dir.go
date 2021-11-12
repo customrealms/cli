@@ -103,7 +103,7 @@ func initDirFiles(dir, name string) error {
 		Author:   "",
 		License:  "ISC",
 		Dependencies: map[string]string{
-			"@customrealms/core": "^0.1.0",
+			"@customrealms/core": "^0.2.4",
 		},
 		DevDependencies: map[string]string{
 			"@customrealms/cli": "^0.1.0",
