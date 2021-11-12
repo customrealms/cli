@@ -138,8 +138,12 @@ async function install(callback) {
     if (!opts) return callback(INVALID_INPUT);
     mkdirp.sync(opts.binPath);
     console.info(`Copying the relevant binary for your platform ${process.platform}`);
-    const src= `./dist/customrealms-cli-${process.platform}-${ARCH_MAPPING[process.arch]}_${process.platform}_${ARCH_MAPPING[process.arch]}/${opts.binName}`;
-    fs.copyFileSync(src, `${opts.binPath}/${opts.binName}`);
+    const src = path.join(
+        'dist',
+        `customrealms-cli-${process.platform}-${ARCH_MAPPING[process.arch]}_${process.platform}_${ARCH_MAPPING[process.arch]}`,
+        opts.binName,
+    );
+    fs.copyFileSync(src, path.join(opts.binPath, opts.binName));
     // await execShellCommand(`cp ${src} ${opts.binPath}/${opts.binName}`);
     await verifyAndPlaceBinary(opts.binName, opts.binPath, callback);
 }
