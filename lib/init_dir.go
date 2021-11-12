@@ -103,10 +103,10 @@ func initDirFiles(dir, name string) error {
 		Author:   "",
 		License:  "ISC",
 		Dependencies: map[string]string{
-			"@customrealms/core": "^0.2.4",
+			"@customrealms/core": "^0.1.0",
 		},
 		DevDependencies: map[string]string{
-			"@customrealms/cli": "^0.1.0",
+			"@customrealms/cli": "^0.2.4",
 			"ts-loader":         "^9.2.6",
 			"tslib":             "^2.3.1",
 			"typescript":        "^4.4.4",
