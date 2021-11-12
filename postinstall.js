@@ -138,11 +138,19 @@ async function install(callback) {
     if (!opts) return callback(INVALID_INPUT);
     mkdirp.sync(opts.binPath);
     console.info(`Copying the relevant binary for your platform ${process.platform}`);
+
+    // Map the process platform and arch strings to the Go version
+    const platform = PLATFORM_MAPPING[process.platform];
+    const arch = ARCH_MAPPING[process.arch];
+
+    // Get the path to the binary within the package
     const src = path.join(
         'dist',
-        `customrealms-cli-${process.platform}-${ARCH_MAPPING[process.arch]}_${process.platform}_${ARCH_MAPPING[process.arch]}`,
+        `customrealms-cli-${platform}-${arch}_${platform}_${arch}`,
         opts.binName,
     );
+
+    // Copy the binary to its destination path
     fs.copyFileSync(src, path.join(opts.binPath, opts.binName));
     // await execShellCommand(`cp ${src} ${opts.binPath}/${opts.binName}`);
     await verifyAndPlaceBinary(opts.binName, opts.binPath, callback);
