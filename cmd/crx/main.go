@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/customrealms/cli/actions/build"
 	"github.com/customrealms/cli/actions/initialize"
@@ -74,7 +73,7 @@ func crxBuild() error {
 	flag.StringVar(&projectDir, "p", ".", "plugin project directory")
 	flag.StringVar(&mcVersion, "mc", DEFAULT_MC_VERSION, "Minecraft version number target")
 	flag.StringVar(&outputFile, "o", "", "output JAR file path")
-	flag.StringVar(&operatingSystem, "os", runtime.GOOS, "operating system target (windows, macos, or linux)")
+	flag.StringVar(&operatingSystem, "os", "", "operating system target (windows, macos, or linux)")
 	flag.CommandLine.Parse(os.Args[2:])
 
 	// Require the output file path
