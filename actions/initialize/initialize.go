@@ -50,7 +50,7 @@ func (a *InitAction) Run(ctx context.Context) error {
 	}
 
 	// Run npm install
-	cmd := exec.Command("npm", "install")
+	cmd := exec.CommandContext(ctx, "npm", "install")
 	cmd.Dir = a.Dir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -62,7 +62,7 @@ func (a *InitAction) Run(ctx context.Context) error {
 	if _, err := exec.LookPath("git"); err == nil {
 
 		// Initialize the git repo
-		cmd = exec.Command("git", "init")
+		cmd = exec.CommandContext(ctx, "git", "init")
 		cmd.Dir = a.Dir
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

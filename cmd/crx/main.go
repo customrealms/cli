@@ -5,16 +5,16 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"runtime"
 
+	"github.com/customrealms/cli/actions/build"
 	"github.com/customrealms/cli/actions/initialize"
-	"github.com/customrealms/cli/lib"
 )
 
 const VERSION = "0.3.0"
 const DEFAULT_MC_VERSION = "1.17.1"
-const CR_CORE_VERSION = "0.1.0"
+const CR_CORE_VERSION_TARGET = "^0.1.0"
 
 func main() {
 
@@ -55,8 +55,8 @@ func crxInit() error {
 		Name:        filepath.Base(projectDir),
 		Dir:         projectDir,
 		Template:    nil,
-		CoreVersion: CR_CORE_VERSION,
-		CliVersion:  VERSION,
+		CoreVersion: CR_CORE_VERSION_TARGET,
+		CliVersion:  fmt.Sprintf("^%s", VERSION),
 	}
 
 	// Run the init action
@@ -66,38 +66,38 @@ func crxInit() error {
 
 func crxBuild() error {
 
+	// Parse command line arguments
 	var projectDir string
 	var mcVersion string
 	var outputFile string
-
+	var operatingSystem string
 	flag.StringVar(&projectDir, "p", ".", "plugin project directory")
 	flag.StringVar(&mcVersion, "mc", DEFAULT_MC_VERSION, "Minecraft version number target")
 	flag.StringVar(&outputFile, "o", "", "output JAR file path")
-
+	flag.StringVar(&operatingSystem, "os", runtime.GOOS, "operating system target (windows, macos, or linux)")
 	flag.CommandLine.Parse(os.Args[2:])
 
+	// Require the output file path
 	if len(outputFile) == 0 {
 		fmt.Println("Output JAR file is required: -o option")
 		os.Exit(1)
 	}
 
-	// Build the local directory
-	cmd := exec.Command("npm", "run", "build")
-	cmd.Dir = projectDir
-	if err := cmd.Run(); err != nil {
-		return err
+	// Create the JAR template to build with
+	jarTemplate := build.JarTemplate{
+		MinecraftVersion: mcVersion,
+		OperatingSystem:  operatingSystem,
 	}
 
-	// Define the specification for the JAR template
-	jarTemplate := lib.JarTemplate{
-		MCVersion: mcVersion,
+	// Create the build action
+	buildAction := build.BuildAction{
+		ProjectDir:       projectDir,
+		JarTemplate:      &jarTemplate,
+		MinecraftVersion: mcVersion,
+		OutputFile:       outputFile,
 	}
 
-	return lib.BundleJar(
-		projectDir,
-		&jarTemplate,
-		mcVersion,
-		outputFile,
-	)
+	// Run the build action
+	return buildAction.Run(context.Background())
 
 }
