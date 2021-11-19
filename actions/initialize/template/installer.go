@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
 	tmpl "text/template"
 )
@@ -170,15 +170,15 @@ func populateDirWithFile(
 	}
 
 	// Make sure the directory exists for the file
-	toDir := filepath.Dir(to)
+	toDir := path.Dir(to)
 	if err := os.MkdirAll(toDir, 0777); err != nil {
 		return fmt.Errorf("failed to create %q from template: %s", toDir, err)
 	}
 
 	// Copy the file contents
-	toFile, err := os.Create(filepath.Join(dir, to))
+	toFile, err := os.Create(path.Join(dir, to))
 	if err != nil {
-		return fmt.Errorf("failedto create %q from template: %s", to, err)
+		return fmt.Errorf("failed to create %q from template: %s", to, err)
 	}
 	defer toFile.Close()
 

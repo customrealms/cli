@@ -3,7 +3,7 @@ package template
 import (
 	"io"
 	"io/fs"
-	"path/filepath"
+	"path"
 )
 
 type Template interface {
@@ -16,7 +16,7 @@ type templateFS struct {
 }
 
 func (t *templateFS) Open(name string) (io.ReadCloser, error) {
-	return t.FS.Open(filepath.Join(t.Dir, name))
+	return t.FS.Open(path.Join(t.Dir, name))
 }
 
 func NewFromFS(fileSystem fs.FS) Template {
