@@ -1,17 +1,20 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 
+	"github.com/customrealms/cli/actions/initialize"
 	"github.com/customrealms/cli/lib"
 )
 
-const VERSION = "0.1.0"
+const VERSION = "0.3.0"
 const DEFAULT_MC_VERSION = "1.17.1"
+const CR_CORE_VERSION = "0.1.0"
 
 func main() {
 
@@ -22,37 +25,46 @@ func main() {
 	}
 
 	// Get the operation string
+	var err error
 	switch os.Args[1] {
 	case "version":
 		fmt.Printf("customrealms-cli (crx) v%s\n", VERSION)
 	case "init":
-		crxInit()
+		err = crxInit()
 	case "build":
-		crxBuild()
+		err = crxBuild()
+	}
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 }
 
-func crxInit() {
+func crxInit() error {
 
+	// Parse command line arguments
+	cwd, _ := os.Getwd()
 	var projectDir string
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
 	flag.StringVar(&projectDir, "p", cwd, "plugin project directory")
-
 	flag.CommandLine.Parse(os.Args[2:])
 
-	if err := lib.InitDir(projectDir, filepath.Base(projectDir)); err != nil {
-		panic(err)
+	// Create the init runner
+	initAction := initialize.InitAction{
+		Name:        filepath.Base(projectDir),
+		Dir:         projectDir,
+		Template:    nil,
+		CoreVersion: CR_CORE_VERSION,
+		CliVersion:  VERSION,
 	}
+
+	// Run the init action
+	return initAction.Run(context.Background())
 
 }
 
-func crxBuild() {
+func crxBuild() error {
 
 	var projectDir string
 	var mcVersion string
@@ -73,7 +85,7 @@ func crxBuild() {
 	cmd := exec.Command("npm", "run", "build")
 	cmd.Dir = projectDir
 	if err := cmd.Run(); err != nil {
-		panic(err)
+		return err
 	}
 
 	// Define the specification for the JAR template
@@ -81,13 +93,11 @@ func crxBuild() {
 		MCVersion: mcVersion,
 	}
 
-	if err := lib.BundleJar(
+	return lib.BundleJar(
 		projectDir,
 		&jarTemplate,
 		mcVersion,
 		outputFile,
-	); err != nil {
-		panic(err)
-	}
+	)
 
 }
