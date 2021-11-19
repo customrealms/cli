@@ -41,8 +41,8 @@ func (a *InitAction) Run(ctx context.Context) error {
 		a.Dir,
 		&template.Options{
 			Name:        a.Name,
-			CoreVersion: "^0.1.0",
-			CliVersion:  "^0.3.0",
+			CoreVersion: a.CoreVersion,
+			CliVersion:  a.CliVersion,
 		},
 	)
 	if err != nil {
