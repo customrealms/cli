@@ -54,6 +54,13 @@ func copyFile(from, to string) error {
 
 func (a *ServeAction) Run(ctx context.Context) error {
 
+	// Check if Java is installed on the machine
+	if _, err := exec.LookPath("java"); err != nil {
+		fmt.Println("Couldn't find 'java' command on your machine. Make sure Java is installed.")
+		fmt.Println("Visit https://dev.java/download and download the most recent version.")
+		return nil
+	}
+
 	fmt.Println("============================================================")
 	fmt.Println("Setting up Minecraft server directory...")
 	fmt.Println("============================================================")

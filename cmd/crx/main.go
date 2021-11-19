@@ -14,7 +14,7 @@ import (
 	"github.com/customrealms/cli/actions/serve"
 )
 
-const VERSION = "0.4.2"
+const VERSION = "0.4.3"
 const DEFAULT_MC_VERSION = "1.17.1"
 const CR_CORE_VERSION_TARGET = "^0.1.0"
 
