@@ -1,21 +1,18 @@
-#!/usr/bin/env node
-
-"use strict";
 // Thanks to author of https://github.com/sanathkr/go-npm, we were able to modify his code to work with private packages
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var path = require('path'),
-    mkdirp = require('mkdirp'),
-    fs = require('fs');
+const path = require('path');
+const mkdirp = require('mkdirp');
+const fs = require('fs');
 
-// Mapping from Node's `process.arch` to Golang's `$GOARCH`
+// Mapping from Node's `process.arch` to Golang's GOARCH
 var ARCH_MAPPING = {
     "ia32": "386",
     "x64": "amd64",
     "arm": "arm"
 };
 
-// Mapping between Node's `process.platform` to Golang's
+// Mapping between Node's `process.platform` to Golang's GOOS
 var PLATFORM_MAPPING = {
     "darwin": "darwin",
     "linux": "linux",
@@ -29,24 +26,23 @@ async function getInstallationPath() {
 
     const value = await execShellCommand("npm bin -g");
 
+    var dir = null;
+    if (!value || value.length === 0) {
 
-        var dir = null;
-        if (!value || value.length === 0) {
-
-            // We couldn't infer path from `npm bin`. Let's try to get it from
-            // Environment variables set by NPM when it runs.
-            // npm_config_prefix points to NPM's installation directory where `bin` folder is available
-            // Ex: /Users/foo/.nvm/versions/node/v4.3.0
-            var env = process.env;
-            if (env && env.npm_config_prefix) {
-                dir = path.join(env.npm_config_prefix, "bin");
-            }
-        } else {
-            dir = value.trim();
+        // We couldn't infer path from `npm bin`. Let's try to get it from
+        // Environment variables set by NPM when it runs.
+        // npm_config_prefix points to NPM's installation directory where `bin` folder is available
+        // Ex: /Users/foo/.nvm/versions/node/v4.3.0
+        var env = process.env;
+        if (env && env.npm_config_prefix) {
+            dir = path.join(env.npm_config_prefix, "bin");
         }
+    } else {
+        dir = value.trim();
+    }
 
-        await mkdirp(dir);
-        return dir;
+    await mkdirp(dir);
+    return dir;
 }
 
 async function verifyAndPlaceBinary(binName, binPath, callback) {
@@ -142,8 +138,21 @@ async function install(callback) {
     if (!opts) return callback(INVALID_INPUT);
     mkdirp.sync(opts.binPath);
     console.info(`Copying the relevant binary for your platform ${process.platform}`);
-    const src= `./dist/customrealms-cli-${process.platform}-${ARCH_MAPPING[process.arch]}_${process.platform}_${ARCH_MAPPING[process.arch]}/${opts.binName}`;
-    await execShellCommand(`cp ${src} ${opts.binPath}/${opts.binName}`);
+
+    // Map the process platform and arch strings to the Go version
+    const platform = PLATFORM_MAPPING[process.platform];
+    const arch = ARCH_MAPPING[process.arch];
+
+    // Get the path to the binary within the package
+    const src = path.join(
+        'dist',
+        `customrealms-cli-${platform}-${arch}_${platform}_${arch}`,
+        opts.binName,
+    );
+
+    // Copy the binary to its destination path
+    fs.copyFileSync(src, path.join(opts.binPath, opts.binName));
+    // await execShellCommand(`cp ${src} ${opts.binPath}/${opts.binName}`);
     await verifyAndPlaceBinary(opts.binName, opts.binPath, callback);
 }
 
