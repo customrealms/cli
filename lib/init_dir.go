@@ -34,6 +34,13 @@ type PackageJSONForInit struct {
 
 func InitDir(dir, name string) error {
 
+	// Check if NPM is installed on the machine
+	if _, err := exec.LookPath("npm"); err != nil {
+		fmt.Println("Couldn't find 'npm' command on your machine. Make sure NodeJS is installed.")
+		fmt.Println("Visit https://nodejs.org and download the most recent version.")
+		return nil
+	}
+
 	// Setup the files
 	if err := initDirFiles(dir, name); err != nil {
 		return err
@@ -48,13 +55,18 @@ func InitDir(dir, name string) error {
 		return err
 	}
 
-	// Initialize the git repo
-	cmd = exec.Command("git", "init")
-	cmd.Dir = dir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return err
+	// If Git is installed on the machine
+	if _, err := exec.LookPath("git"); err == nil {
+
+		// Initialize the git repo
+		cmd = exec.Command("git", "init")
+		cmd.Dir = dir
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return err
+		}
+
 	}
 
 	return nil
