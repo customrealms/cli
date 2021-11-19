@@ -11,7 +11,7 @@ import (
 	"github.com/customrealms/cli/actions/initialize"
 )
 
-const VERSION = "0.3.0"
+const VERSION = "0.3.1"
 const DEFAULT_MC_VERSION = "1.17.1"
 const CR_CORE_VERSION_TARGET = "^0.1.0"
 
