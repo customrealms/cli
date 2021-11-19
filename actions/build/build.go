@@ -1,12 +1,14 @@
-package lib
+package build
 
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -23,40 +25,49 @@ func mcVersionToApiVersion(mcVersion string) string {
 	return strings.Join(parts[:2], ".")
 }
 
-func BundleJar(
-	projectDir string,
-	jarTemplate *JarTemplate,
-	mcVersion string,
-	outputFile string,
-) error {
+type BuildAction struct {
+	ProjectDir       string
+	JarTemplate      *JarTemplate
+	MinecraftVersion string
+	OutputFile       string
+}
+
+func (a *BuildAction) Run(ctx context.Context) error {
+
+	// Build the local directory
+	cmd := exec.CommandContext(ctx, "npm", "run", "build")
+	cmd.Dir = a.ProjectDir
+	if err := cmd.Run(); err != nil {
+		return err
+	}
 
 	// Download the jar template
 	var jarTemplateBuf bytes.Buffer
-	if err := jarTemplate.Download(&jarTemplateBuf); err != nil {
+	if err := a.JarTemplate.Download(&jarTemplateBuf); err != nil {
 		return err
 	}
 
 	// Make sure the directory above the output file exists
-	if err := os.MkdirAll(filepath.Dir(outputFile), 0777); err != nil {
+	if err := os.MkdirAll(filepath.Dir(a.OutputFile), 0777); err != nil {
 		return err
 	}
 
 	// Open the output file for the final JAR
-	file, err := os.Create(outputFile)
+	file, err := os.Create(a.OutputFile)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
 	// Create a reader for the plugin source code
-	pluginCode, err := os.Open(filepath.Join(projectDir, "dist", "bundle.js"))
+	pluginCode, err := os.Open(filepath.Join(a.ProjectDir, "dist", "bundle.js"))
 	if err != nil {
 		return err
 	}
 	defer pluginCode.Close()
 
 	// Read the package.json file
-	packageJsonBytes, err := os.ReadFile(filepath.Join(projectDir, "package.json"))
+	packageJsonBytes, err := os.ReadFile(filepath.Join(a.ProjectDir, "package.json"))
 	if err != nil {
 		return err
 	}
@@ -68,7 +79,7 @@ func BundleJar(
 	// Define the plugin.yml details for the plugin
 	pluginYml := PluginYml{
 		Name:       packageJson.Name,
-		ApiVersion: mcVersionToApiVersion(mcVersion),
+		ApiVersion: mcVersionToApiVersion(a.MinecraftVersion),
 		Version:    packageJson.Version,
 		Main:       JAR_MAIN_CLASS,
 	}
@@ -83,7 +94,7 @@ func BundleJar(
 		return err
 	}
 
-	fmt.Println("Wrote JAR file to: ", outputFile)
+	fmt.Println("Wrote JAR file to: ", a.OutputFile)
 
 	return nil
 

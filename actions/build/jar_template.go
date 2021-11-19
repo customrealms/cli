@@ -1,4 +1,4 @@
-package lib
+package build
 
 import (
 	"fmt"
@@ -8,13 +8,13 @@ import (
 )
 
 type JarTemplate struct {
-	Platform  string
-	MCVersion string
+	OperatingSystem  string
+	MinecraftVersion string
 }
 
-func (jt *JarTemplate) normalizePlatform() string {
-	if len(jt.Platform) > 0 {
-		return jt.Platform
+func (jt *JarTemplate) normalizeOperatingSystem() string {
+	if len(jt.OperatingSystem) > 0 {
+		return jt.OperatingSystem
 	}
 	if runtime.GOOS == "darwin" {
 		return "macos"
@@ -25,8 +25,8 @@ func (jt *JarTemplate) normalizePlatform() string {
 func (jt *JarTemplate) getJarUrl() string {
 	return fmt.Sprintf(
 		"https://github.com/customrealms/bukkit-runtime/releases/latest/download/bukkit-runtime-%s-%s.jar",
-		jt.normalizePlatform(),
-		jt.MCVersion,
+		jt.normalizeOperatingSystem(),
+		jt.MinecraftVersion,
 	)
 }
 
