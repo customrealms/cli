@@ -37,6 +37,8 @@ func (a *BuildAction) Run(ctx context.Context) error {
 	// Build the local directory
 	cmd := exec.CommandContext(ctx, "npm", "run", "build")
 	cmd.Dir = a.ProjectDir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return err
 	}
