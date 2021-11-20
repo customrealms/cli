@@ -12,6 +12,7 @@ import (
 	"github.com/customrealms/cli/actions/build"
 	"github.com/customrealms/cli/actions/initialize"
 	"github.com/customrealms/cli/actions/serve"
+	"github.com/customrealms/cli/papermc"
 )
 
 const VERSION = "0.4.3"
@@ -124,7 +125,7 @@ func crxServe() error {
 	}
 
 	// Get the paper version
-	paperVersion := serve.FindPaperVersion(mcVersion)
+	paperVersion := papermc.FindVersion(mcVersion)
 	if paperVersion == nil {
 		fmt.Println("Unsupported Paper version: ", mcVersion)
 		os.Exit(1)
@@ -135,10 +136,17 @@ func crxServe() error {
 	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
+	// Create a fetcher for the PaperMC JAR file that caches the files locally
+	papermcFetcher, err := papermc.NewCachedFetcher(&papermc.HttpFetcher{})
+	if err != nil {
+		return err
+	}
+
 	// Create the serve runner
 	serveAction := serve.ServeAction{
-		PaperVersion:  paperVersion,
-		PluginJarPath: jarFile,
+		PaperVersion:     paperVersion,
+		PluginJarPath:    jarFile,
+		ServerJarFetcher: papermcFetcher,
 	}
 
 	// Run the init action
@@ -160,7 +168,7 @@ func crxBuildAndServe() error {
 	flag.CommandLine.Parse(os.Args[2:])
 
 	// Get the paper version
-	paperVersion := serve.FindPaperVersion(mcVersion)
+	paperVersion := papermc.FindVersion(mcVersion)
 	if paperVersion == nil {
 		fmt.Println("Unsupported Paper version: ", mcVersion)
 		os.Exit(1)
@@ -168,9 +176,15 @@ func crxBuildAndServe() error {
 
 	// If there is no output file provided, default to a temp file
 	if len(outputFile) == 0 {
+
+		// Generate a temp filename for the plugin JAR file
 		ofile, _ := os.CreateTemp("", "cr-jar-output-*.jar")
 		ofile.Close()
 		outputFile = ofile.Name()
+
+		// Make sure to delete the generated file at the end
+		defer os.Remove(outputFile)
+
 	}
 
 	// Create the context
@@ -197,10 +211,17 @@ func crxBuildAndServe() error {
 		return err
 	}
 
+	// Create a fetcher for the PaperMC JAR file that caches the files locally
+	papermcFetcher, err := papermc.NewCachedFetcher(&papermc.HttpFetcher{})
+	if err != nil {
+		return err
+	}
+
 	// Create the serve runner
 	serveAction := serve.ServeAction{
-		PaperVersion:  paperVersion,
-		PluginJarPath: outputFile,
+		PaperVersion:     paperVersion,
+		PluginJarPath:    outputFile,
+		ServerJarFetcher: papermcFetcher,
 	}
 
 	// Run the init action

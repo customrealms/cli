@@ -4,33 +4,41 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/customrealms/cli/papermc"
 )
 
 type ServeAction struct {
-	PaperVersion  *PaperVersion
-	PluginJarPath string
+	PaperVersion     *papermc.Version
+	PluginJarPath    string
+	ServerJarFetcher papermc.Fetcher
 }
 
 func (a *ServeAction) DownloadJarTo(dest string) error {
-	url := a.PaperVersion.Url()
-	res, err := http.Get(url)
+
+	// Download the JAR to a reader stream
+	jarReader, err := a.ServerJarFetcher.Fetch(a.PaperVersion)
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer jarReader.Close()
+
+	// Create the destination file for the JAR
 	file, err := os.Create(dest)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	if _, err := io.Copy(file, res.Body); err != nil {
+
+	// Copy the JAR to its destination
+	if _, err := io.Copy(file, jarReader); err != nil {
 		return err
 	}
 	return nil
+
 }
 
 func copyFile(from, to string) error {
