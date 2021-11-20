@@ -170,7 +170,7 @@ func populateDirWithFile(
 	}
 
 	// Make sure the directory exists for the file
-	toDir := path.Dir(to)
+	toDir := path.Join(dir, path.Dir(to))
 	if err := os.MkdirAll(toDir, 0777); err != nil {
 		return fmt.Errorf("failed to create %q from template: %s", toDir, err)
 	}
