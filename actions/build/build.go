@@ -69,12 +69,8 @@ func (a *BuildAction) Run(ctx context.Context) error {
 	defer pluginCode.Close()
 
 	// Read the package.json file
-	packageJsonBytes, err := os.ReadFile(filepath.Join(a.ProjectDir, "package.json"))
+	packageJson, err := a.readPackageJson()
 	if err != nil {
-		return err
-	}
-	var packageJson PackageJSON
-	if err := json.Unmarshal(packageJsonBytes, &packageJson); err != nil {
 		return err
 	}
 
@@ -99,6 +95,26 @@ func (a *BuildAction) Run(ctx context.Context) error {
 	fmt.Println("Wrote JAR file to: ", a.OutputFile)
 
 	return nil
+
+}
+
+// readPackageJson reads the package.json file in the project
+func (a *BuildAction) readPackageJson() (*PackageJSON, error) {
+
+	// Read the package.json file to bytes
+	packageJsonBytes, err := os.ReadFile(filepath.Join(a.ProjectDir, "package.json"))
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal it from its JSON format
+	var packageJson PackageJSON
+	if err := json.Unmarshal(packageJsonBytes, &packageJson); err != nil {
+		return nil, err
+	}
+
+	// Return the package JSON object
+	return &packageJson, nil
 
 }
 
