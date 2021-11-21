@@ -35,7 +35,7 @@ type BuildAction struct {
 func (a *BuildAction) Run(ctx context.Context) error {
 
 	// Build the local directory
-	cmd := exec.CommandContext(ctx, "npm", "run", "build")
+	cmd := exec.CommandContext(ctx, "npx", "webpack-cli", "--mode=production")
 	cmd.Dir = a.ProjectDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
