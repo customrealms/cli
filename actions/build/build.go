@@ -4,29 +4,19 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/customrealms/cli/project"
 )
 
-const JAR_MAIN_CLASS = "io.customrealms.MainPlugin"
-
-type PackageJSON struct {
-	Name    string `json:"name"`
-	Version string `json:"version"`
-}
-
-func mcVersionToApiVersion(mcVersion string) string {
-	parts := strings.Split(mcVersion, ".")
-	return strings.Join(parts[:2], ".")
-}
-
 type BuildAction struct {
-	ProjectDir       string
+	Project          *project.Project
 	JarTemplate      *JarTemplate
 	MinecraftVersion string
 	OutputFile       string
@@ -34,14 +24,25 @@ type BuildAction struct {
 
 func (a *BuildAction) Run(ctx context.Context) error {
 
+	// Create the temp directory for the code output from Webpack.
+	// The code will be put into "bundle.js" in that directory
+	webpackOutputDir := filepath.Join(
+		os.TempDir(),
+		fmt.Sprintf("cr-build-%d-%d", time.Now().Unix(), rand.Uint32()),
+	)
+
+	fmt.Println("============================================================")
+	fmt.Println("Bundling JavaScript code using Webpack")
+	fmt.Println("============================================================")
+
 	// Build the local directory
-	cmd := exec.CommandContext(ctx, "npx", "webpack-cli", "--mode=production")
-	cmd.Dir = a.ProjectDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd := a.Project.CommandContext(ctx, "npx", "webpack-cli", "--mode=production", "-o", webpackOutputDir)
 	if err := cmd.Run(); err != nil {
 		return err
 	}
+	defer os.RemoveAll(webpackOutputDir)
+
+	fmt.Println()
 
 	// Download the jar template
 	var jarTemplateBuf bytes.Buffer
@@ -62,24 +63,22 @@ func (a *BuildAction) Run(ctx context.Context) error {
 	defer file.Close()
 
 	// Create a reader for the plugin source code
-	pluginCode, err := os.Open(filepath.Join(a.ProjectDir, "dist", "bundle.js"))
+	pluginCode, err := os.Open(filepath.Join(webpackOutputDir, "bundle.js"))
 	if err != nil {
 		return err
 	}
 	defer pluginCode.Close()
 
 	// Read the package.json file
-	packageJson, err := a.readPackageJson()
+	packageJson, err := a.Project.PackageJSON()
 	if err != nil {
 		return err
 	}
 
 	// Define the plugin.yml details for the plugin
 	pluginYml := PluginYml{
-		Name:       packageJson.Name,
-		ApiVersion: mcVersionToApiVersion(a.MinecraftVersion),
-		Version:    packageJson.Version,
-		Main:       JAR_MAIN_CLASS,
+		MinecraftVersion: a.MinecraftVersion,
+		PackageJSON:      packageJson,
 	}
 
 	// Produce the final JAR file
@@ -95,26 +94,6 @@ func (a *BuildAction) Run(ctx context.Context) error {
 	fmt.Println("Wrote JAR file to: ", a.OutputFile)
 
 	return nil
-
-}
-
-// readPackageJson reads the package.json file in the project
-func (a *BuildAction) readPackageJson() (*PackageJSON, error) {
-
-	// Read the package.json file to bytes
-	packageJsonBytes, err := os.ReadFile(filepath.Join(a.ProjectDir, "package.json"))
-	if err != nil {
-		return nil, err
-	}
-
-	// Unmarshal it from its JSON format
-	var packageJson PackageJSON
-	if err := json.Unmarshal(packageJsonBytes, &packageJson); err != nil {
-		return nil, err
-	}
-
-	// Return the package JSON object
-	return &packageJson, nil
 
 }
 

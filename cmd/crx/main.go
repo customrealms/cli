@@ -13,6 +13,7 @@ import (
 	"github.com/customrealms/cli/actions/initialize"
 	"github.com/customrealms/cli/actions/serve"
 	"github.com/customrealms/cli/papermc"
+	"github.com/customrealms/cli/project"
 )
 
 const VERSION = "0.4.3"
@@ -96,9 +97,14 @@ func crxBuild() error {
 		OperatingSystem:  operatingSystem,
 	}
 
+	// Create the project
+	crProject := project.Project{
+		Dir: projectDir,
+	}
+
 	// Create the build action
 	buildAction := build.BuildAction{
-		ProjectDir:       projectDir,
+		Project:          &crProject,
 		JarTemplate:      &jarTemplate,
 		MinecraftVersion: mcVersion,
 		OutputFile:       outputFile,
@@ -198,9 +204,14 @@ func crxBuildAndServe() error {
 		OperatingSystem:  operatingSystem,
 	}
 
+	// Create the project
+	crProject := project.Project{
+		Dir: projectDir,
+	}
+
 	// Create the build action
 	buildAction := build.BuildAction{
-		ProjectDir:       projectDir,
+		Project:          &crProject,
 		JarTemplate:      &jarTemplate,
 		MinecraftVersion: mcVersion,
 		OutputFile:       outputFile,
