@@ -46,7 +46,7 @@ func (y *PluginYml) String() string {
 					lines = append(lines, indent(2)+fmt.Sprintf("permision-message: %s", attrs.PermissionMessage))
 				}
 				if len(attrs.Usage) > 0 {
-					lines = append(lines, indent(2)+fmt.Sprintf("usage: %s", attrs.Usage))
+					lines = append(lines, indent(2)+fmt.Sprintf("usage: %q", attrs.Usage))
 				}
 			}
 		}
