@@ -12,12 +12,12 @@ import (
 	"github.com/customrealms/cli/actions/build"
 	"github.com/customrealms/cli/actions/initialize"
 	"github.com/customrealms/cli/actions/serve"
+	"github.com/customrealms/cli/minecraft"
 	"github.com/customrealms/cli/papermc"
 	"github.com/customrealms/cli/project"
 )
 
 const VERSION = "0.4.3"
-const DEFAULT_MC_VERSION = "1.17.1"
 const CR_CORE_VERSION_TARGET = "^0.1.0"
 
 func main() {
@@ -50,6 +50,32 @@ func main() {
 
 }
 
+// mustMinecraftVersion takes a user-supplied Minecraft version string and resolves the corresponding minecraft.Version
+// instance. If nothing can be found, it exits the process
+func mustMinecraftVersion(versionString string) minecraft.Version {
+	if len(versionString) == 0 {
+		mcVersion := minecraft.LatestVersion()
+		if mcVersion == nil {
+			fmt.Println("Failed to resolve the default Minecraft version")
+			os.Exit(1)
+		}
+		return mcVersion
+	} else {
+		minecraftVersion := minecraft.FindVersion(versionString)
+		if minecraftVersion == nil {
+			fmt.Println("Unsupported Minecraft version: ", versionString)
+			fmt.Println()
+			fmt.Println("Please use a supported Minecraft version:")
+			for _, version := range minecraft.SupportedVersions {
+				fmt.Println(" -> ", version)
+			}
+			fmt.Println()
+			os.Exit(1)
+		}
+		return minecraftVersion
+	}
+}
+
 func crxInit() error {
 
 	// Parse command line arguments
@@ -80,7 +106,7 @@ func crxBuild() error {
 	var outputFile string
 	var operatingSystem string
 	flag.StringVar(&projectDir, "p", ".", "plugin project directory")
-	flag.StringVar(&mcVersion, "mc", DEFAULT_MC_VERSION, "Minecraft version number target")
+	flag.StringVar(&mcVersion, "mc", "", "Minecraft version number target")
 	flag.StringVar(&outputFile, "o", "", "output JAR file path")
 	flag.StringVar(&operatingSystem, "os", "", "operating system target (windows, macos, or linux)")
 	flag.CommandLine.Parse(os.Args[2:])
@@ -91,9 +117,12 @@ func crxBuild() error {
 		os.Exit(1)
 	}
 
+	// Get the Minecraft version
+	minecraftVersion := mustMinecraftVersion(mcVersion)
+
 	// Create the JAR template to build with
 	jarTemplate := build.JarTemplate{
-		MinecraftVersion: mcVersion,
+		MinecraftVersion: minecraftVersion,
 		OperatingSystem:  operatingSystem,
 	}
 
@@ -106,7 +135,7 @@ func crxBuild() error {
 	buildAction := build.BuildAction{
 		Project:          &crProject,
 		JarTemplate:      &jarTemplate,
-		MinecraftVersion: mcVersion,
+		MinecraftVersion: minecraftVersion,
 		OutputFile:       outputFile,
 	}
 
@@ -121,7 +150,7 @@ func crxServe() error {
 	var jarFile string
 	var mcVersion string
 	flag.StringVar(&jarFile, "jar", "", "path to the plugin JAR file")
-	flag.StringVar(&mcVersion, "mc", DEFAULT_MC_VERSION, "Minecraft version number target")
+	flag.StringVar(&mcVersion, "mc", "", "Minecraft version number target")
 	flag.CommandLine.Parse(os.Args[2:])
 
 	// Require the JAR file path
@@ -130,12 +159,8 @@ func crxServe() error {
 		os.Exit(1)
 	}
 
-	// Get the paper version
-	paperVersion := papermc.FindVersion(mcVersion)
-	if paperVersion == nil {
-		fmt.Println("Unsupported Paper version: ", mcVersion)
-		os.Exit(1)
-	}
+	// Get the Minecraft version
+	minecraftVersion := mustMinecraftVersion(mcVersion)
 
 	// Create the context
 	ctx := context.Background()
@@ -150,7 +175,7 @@ func crxServe() error {
 
 	// Create the serve runner
 	serveAction := serve.ServeAction{
-		PaperVersion:     paperVersion,
+		MinecraftVersion: minecraftVersion,
 		PluginJarPath:    jarFile,
 		ServerJarFetcher: papermcFetcher,
 	}
@@ -168,17 +193,13 @@ func crxBuildAndServe() error {
 	var outputFile string
 	var operatingSystem string
 	flag.StringVar(&projectDir, "p", ".", "plugin project directory")
-	flag.StringVar(&mcVersion, "mc", DEFAULT_MC_VERSION, "Minecraft version number target")
+	flag.StringVar(&mcVersion, "mc", "", "Minecraft version number target")
 	flag.StringVar(&outputFile, "o", "", "output JAR file path")
 	flag.StringVar(&operatingSystem, "os", "", "operating system target (windows, macos, or linux)")
 	flag.CommandLine.Parse(os.Args[2:])
 
-	// Get the paper version
-	paperVersion := papermc.FindVersion(mcVersion)
-	if paperVersion == nil {
-		fmt.Println("Unsupported Paper version: ", mcVersion)
-		os.Exit(1)
-	}
+	// Get the Minecraft version
+	minecraftVersion := mustMinecraftVersion(mcVersion)
 
 	// If there is no output file provided, default to a temp file
 	if len(outputFile) == 0 {
@@ -200,7 +221,7 @@ func crxBuildAndServe() error {
 
 	// Create the JAR template to build with
 	jarTemplate := build.JarTemplate{
-		MinecraftVersion: mcVersion,
+		MinecraftVersion: minecraftVersion,
 		OperatingSystem:  operatingSystem,
 	}
 
@@ -213,7 +234,7 @@ func crxBuildAndServe() error {
 	buildAction := build.BuildAction{
 		Project:          &crProject,
 		JarTemplate:      &jarTemplate,
-		MinecraftVersion: mcVersion,
+		MinecraftVersion: minecraftVersion,
 		OutputFile:       outputFile,
 	}
 
@@ -230,7 +251,7 @@ func crxBuildAndServe() error {
 
 	// Create the serve runner
 	serveAction := serve.ServeAction{
-		PaperVersion:     paperVersion,
+		MinecraftVersion: minecraftVersion,
 		PluginJarPath:    outputFile,
 		ServerJarFetcher: papermcFetcher,
 	}

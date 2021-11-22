@@ -12,13 +12,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/customrealms/cli/minecraft"
 	"github.com/customrealms/cli/project"
 )
 
 type BuildAction struct {
 	Project          *project.Project
 	JarTemplate      *JarTemplate
-	MinecraftVersion string
+	MinecraftVersion minecraft.Version
 	OutputFile       string
 }
 

@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"path"
+
+	"github.com/customrealms/cli/minecraft"
 )
 
 type cachedFetcher struct {
@@ -30,11 +32,11 @@ func NewCachedFetcher(fetcher Fetcher) (Fetcher, error) {
 
 }
 
-func (f *cachedFetcher) getJarCacheFilename(version *Version) string {
-	return path.Join(f.cacheDir, fmt.Sprintf("paper-%s-%d.jar", version.Version, version.Build))
+func (f *cachedFetcher) getJarCacheFilename(version minecraft.Version) string {
+	return path.Join(f.cacheDir, fmt.Sprintf("paper-%s.jar", version))
 }
 
-func (f *cachedFetcher) findJarFile(version *Version) (io.ReadCloser, error) {
+func (f *cachedFetcher) findJarFile(version minecraft.Version) (io.ReadCloser, error) {
 
 	// Get the filename of the JAR cache
 	jarCacheFilename := f.getJarCacheFilename(version)
@@ -57,7 +59,7 @@ func (f *cachedFetcher) findJarFile(version *Version) (io.ReadCloser, error) {
 
 }
 
-func (f *cachedFetcher) storeJarFile(reader io.Reader, version *Version) (string, error) {
+func (f *cachedFetcher) storeJarFile(reader io.Reader, version minecraft.Version) (string, error) {
 
 	// Get the filename of the JAR cache
 	jarCacheFilename := f.getJarCacheFilename(version)
@@ -79,7 +81,7 @@ func (f *cachedFetcher) storeJarFile(reader io.Reader, version *Version) (string
 
 }
 
-func (f *cachedFetcher) Fetch(version *Version) (io.ReadCloser, error) {
+func (f *cachedFetcher) Fetch(version minecraft.Version) (io.ReadCloser, error) {
 
 	// Check for the file in the cache, and return the cached version is there is one
 	jarReader, err := f.findJarFile(version)

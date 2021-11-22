@@ -1,7 +1,11 @@
 package papermc
 
-import "io"
+import (
+	"io"
+
+	"github.com/customrealms/cli/minecraft"
+)
 
 type Fetcher interface {
-	Fetch(version *Version) (io.ReadCloser, error)
+	Fetch(version minecraft.Version) (io.ReadCloser, error)
 }
