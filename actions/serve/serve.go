@@ -9,13 +9,13 @@ import (
 	"path/filepath"
 
 	"github.com/customrealms/cli/minecraft"
-	"github.com/customrealms/cli/papermc"
+	"github.com/customrealms/cli/server"
 )
 
 type ServeAction struct {
 	MinecraftVersion minecraft.Version
 	PluginJarPath    string
-	ServerJarFetcher papermc.Fetcher
+	ServerJarFetcher server.JarFetcher
 }
 
 func (a *ServeAction) DownloadJarTo(dest string) error {
@@ -85,11 +85,11 @@ func (a *ServeAction) Run(ctx context.Context) error {
 	fmt.Println()
 
 	fmt.Println("============================================================")
-	fmt.Println("Downloading JAR file for PaperMC server...")
+	fmt.Printf("Downloading JAR file for %s server...", a.MinecraftVersion.ServerJarType())
 	fmt.Println("============================================================")
 
 	// Create the name of the JAR file
-	jarBase := fmt.Sprintf("paper-%s.jar", a.MinecraftVersion)
+	jarBase := fmt.Sprintf("%s-%s.jar", a.MinecraftVersion.ServerJarType(), a.MinecraftVersion)
 	jarFile := filepath.Join(dir, jarBase)
 
 	// Download the JAR file to the path

@@ -13,8 +13,8 @@ import (
 	"github.com/customrealms/cli/actions/initialize"
 	"github.com/customrealms/cli/actions/serve"
 	"github.com/customrealms/cli/minecraft"
-	"github.com/customrealms/cli/papermc"
 	"github.com/customrealms/cli/project"
+	"github.com/customrealms/cli/server"
 )
 
 const VERSION = "0.4.3"
@@ -167,8 +167,8 @@ func crxServe() error {
 	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	// Create a fetcher for the PaperMC JAR file that caches the files locally
-	papermcFetcher, err := papermc.NewCachedFetcher(&papermc.HttpFetcher{})
+	// Create a fetcher for the Minecraft server JAR file that caches the files locally
+	serverJarFetcher, err := server.NewCachedFetcher(&server.HttpFetcher{})
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func crxServe() error {
 	serveAction := serve.ServeAction{
 		MinecraftVersion: minecraftVersion,
 		PluginJarPath:    jarFile,
-		ServerJarFetcher: papermcFetcher,
+		ServerJarFetcher: serverJarFetcher,
 	}
 
 	// Run the init action
@@ -243,8 +243,8 @@ func crxBuildAndServe() error {
 		return err
 	}
 
-	// Create a fetcher for the PaperMC JAR file that caches the files locally
-	papermcFetcher, err := papermc.NewCachedFetcher(&papermc.HttpFetcher{})
+	// Create a fetcher for the Minecraft server JAR file that caches the files locally
+	serverJarFetcher, err := server.NewCachedFetcher(&server.HttpFetcher{})
 	if err != nil {
 		return err
 	}
@@ -253,7 +253,7 @@ func crxBuildAndServe() error {
 	serveAction := serve.ServeAction{
 		MinecraftVersion: minecraftVersion,
 		PluginJarPath:    outputFile,
-		ServerJarFetcher: papermcFetcher,
+		ServerJarFetcher: serverJarFetcher,
 	}
 
 	// Run the init action
