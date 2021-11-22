@@ -28,22 +28,32 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Get the operation string
-	var err error
-	switch os.Args[1] {
-	case "version":
-		fmt.Printf("customrealms-cli (crx) v%s\n", VERSION)
-	case "init":
-		err = crxInit()
-	case "serve":
-		err = crxServe()
-	case "build":
-		err = crxBuild()
-	case "run":
-		err = crxBuildAndServe()
+	// Define the map of commands
+	commands := map[string]func() error{
+		"version": func() error {
+			fmt.Printf("customrealms-cli (crx) v%s\n", VERSION)
+			return nil
+		},
+		"init":  crxInit,
+		"serve": crxServe,
+		"build": crxBuild,
+		"run":   crxBuildAndServe,
 	}
 
-	if err != nil {
+	// Check for the command function
+	commandFunc, ok := commands[os.Args[1]]
+	if !ok {
+		fmt.Printf("Unsupported command %q\n", os.Args[1])
+		fmt.Println("List of commands:")
+		for cmd := range commands {
+			fmt.Printf(" -> crx %s ...\n", cmd)
+		}
+		fmt.Println()
+		os.Exit(1)
+	}
+
+	// Run the command function
+	if err := commandFunc(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
