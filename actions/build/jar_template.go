@@ -5,11 +5,13 @@ import (
 	"io"
 	"net/http"
 	"runtime"
+
+	"github.com/customrealms/cli/minecraft"
 )
 
 type JarTemplate struct {
 	OperatingSystem  string
-	MinecraftVersion string
+	MinecraftVersion minecraft.Version
 }
 
 func (jt *JarTemplate) normalizeOperatingSystem() string {

@@ -1,16 +1,18 @@
-package papermc
+package server
 
 import (
 	"io"
 	"net/http"
+
+	"github.com/customrealms/cli/minecraft"
 )
 
 type HttpFetcher struct{}
 
-func (f *HttpFetcher) Fetch(version *Version) (io.ReadCloser, error) {
+func (f *HttpFetcher) Fetch(version minecraft.Version) (io.ReadCloser, error) {
 
 	// Fetch the JAR file from the server
-	res, err := http.Get(version.Url())
+	res, err := http.Get(version.ServerJarUrl())
 	if err != nil {
 		return nil, err
 	}

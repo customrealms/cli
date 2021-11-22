@@ -8,19 +8,20 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/customrealms/cli/papermc"
+	"github.com/customrealms/cli/minecraft"
+	"github.com/customrealms/cli/server"
 )
 
 type ServeAction struct {
-	PaperVersion     *papermc.Version
+	MinecraftVersion minecraft.Version
 	PluginJarPath    string
-	ServerJarFetcher papermc.Fetcher
+	ServerJarFetcher server.JarFetcher
 }
 
 func (a *ServeAction) DownloadJarTo(dest string) error {
 
 	// Download the JAR to a reader stream
-	jarReader, err := a.ServerJarFetcher.Fetch(a.PaperVersion)
+	jarReader, err := a.ServerJarFetcher.Fetch(a.MinecraftVersion)
 	if err != nil {
 		return err
 	}
@@ -84,11 +85,11 @@ func (a *ServeAction) Run(ctx context.Context) error {
 	fmt.Println()
 
 	fmt.Println("============================================================")
-	fmt.Println("Downloading JAR file for PaperMC server...")
+	fmt.Printf("Downloading JAR file for %s server...\n", a.MinecraftVersion.ServerJarType())
 	fmt.Println("============================================================")
 
 	// Create the name of the JAR file
-	jarBase := fmt.Sprintf("paper-%s-%d.jar", a.PaperVersion.Version, a.PaperVersion.Build)
+	jarBase := fmt.Sprintf("%s-%s.jar", a.MinecraftVersion.ServerJarType(), a.MinecraftVersion)
 	jarFile := filepath.Join(dir, jarBase)
 
 	// Download the JAR file to the path
