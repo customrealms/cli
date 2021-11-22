@@ -38,6 +38,7 @@ func main() {
 		"serve": crxServe,
 		"build": crxBuild,
 		"run":   crxBuildAndServe,
+		"yml":   crxYaml,
 	}
 
 	// Check for the command function
@@ -84,6 +85,40 @@ func mustMinecraftVersion(versionString string) minecraft.Version {
 		}
 		return minecraftVersion
 	}
+}
+
+func crxYaml() error {
+
+	// Parse command line arguments
+	var projectDir string
+	var mcVersion string
+	flag.StringVar(&projectDir, "p", ".", "plugin project directory")
+	flag.StringVar(&mcVersion, "mc", "", "Minecraft version number target")
+	flag.CommandLine.Parse(os.Args[2:])
+
+	// Get the Minecraft version
+	minecraftVersion := mustMinecraftVersion(mcVersion)
+
+	// Create the project
+	crProject := project.Project{
+		Dir: projectDir,
+	}
+
+	// Read the package.json file
+	packageJson, err := crProject.PackageJSON()
+	if err != nil {
+		return err
+	}
+
+	// Define the plugin.yml details for the plugin
+	pluginYml := &build.PluginYml{
+		MinecraftVersion: minecraftVersion,
+		PackageJSON:      packageJson,
+	}
+	fmt.Println(pluginYml)
+
+	return nil
+
 }
 
 func crxInit() error {

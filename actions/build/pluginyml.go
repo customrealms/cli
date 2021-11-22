@@ -16,10 +16,69 @@ type PluginYml struct {
 }
 
 func (y *PluginYml) String() string {
-	lines := make([]string, 4)
-	lines[0] = fmt.Sprintf("name: %s", y.PackageJSON.Name)
-	lines[1] = fmt.Sprintf("api-version: %s", y.MinecraftVersion.ApiVersion())
-	lines[2] = fmt.Sprintf("version: %s", y.PackageJSON.Version)
-	lines[3] = fmt.Sprintf("main: %s", JAR_MAIN_CLASS)
-	return strings.Join(lines, "\n") + "\n"
+	var lines []string
+
+	// General plugin details
+	lines = append(lines,
+		fmt.Sprintf("name: %s", y.PackageJSON.Name),
+		fmt.Sprintf("api-version: %s", y.MinecraftVersion.ApiVersion()),
+		fmt.Sprintf("version: %s", y.PackageJSON.Version),
+		fmt.Sprintf("main: %s", JAR_MAIN_CLASS),
+		"",
+	)
+
+	// Add the commands
+	if len(y.PackageJSON.Commands) > 0 {
+		lines = append(lines, "commands:")
+		for key, attrs := range y.PackageJSON.Commands {
+			lines = append(lines, indent(1)+fmt.Sprintf("%s:", key))
+			if attrs != nil {
+				if len(attrs.Description) > 0 {
+					lines = append(lines, indent(2)+fmt.Sprintf("description: %s", attrs.Description))
+				}
+				if len(attrs.Aliases) > 0 {
+					lines = append(lines, indent(2)+fmt.Sprintf("aliases: [%s]", strings.Join(attrs.Aliases, ", ")))
+				}
+				if len(attrs.Permission) > 0 {
+					lines = append(lines, indent(2)+fmt.Sprintf("permission: %s", attrs.Permission))
+				}
+				if len(attrs.PermissionMessage) > 0 {
+					lines = append(lines, indent(2)+fmt.Sprintf("permision-message: %s", attrs.PermissionMessage))
+				}
+				if len(attrs.Usage) > 0 {
+					lines = append(lines, indent(2)+fmt.Sprintf("usage: %s", attrs.Usage))
+				}
+			}
+		}
+		lines = append(lines, "")
+	}
+
+	// Add the permissions
+	if len(y.PackageJSON.Permissions) > 0 {
+		lines = append(lines, "permissions:")
+		for key, attrs := range y.PackageJSON.Permissions {
+			lines = append(lines, indent(1)+fmt.Sprintf("%s:", key))
+			if attrs != nil {
+				if len(attrs.Description) > 0 {
+					lines = append(lines, indent(2)+fmt.Sprintf("description: %s", attrs.Description))
+				}
+				if attrs.Default != nil {
+					lines = append(lines, indent(2)+fmt.Sprintf("default: %t", *attrs.Default))
+				}
+				if attrs.Children != nil {
+					lines = append(lines, indent(2)+"children:")
+					for childKey, childVal := range attrs.Children {
+						lines = append(lines, indent(3)+fmt.Sprintf("%s: %t", childKey, childVal))
+					}
+				}
+			}
+		}
+		lines = append(lines, "")
+	}
+
+	return strings.Join(lines, "\n")
+}
+
+func indent(level int) string {
+	return strings.Repeat(" ", 2*level)
 }
