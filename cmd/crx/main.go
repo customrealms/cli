@@ -17,7 +17,7 @@ import (
 	"github.com/customrealms/cli/server"
 )
 
-const VERSION = "0.4.3"
+const VERSION = "0.4.4"
 const CR_CORE_VERSION_TARGET = "^0.1.0"
 
 func main() {
