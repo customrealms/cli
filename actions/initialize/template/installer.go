@@ -14,9 +14,7 @@ import (
 const ManifestFilename = "manifest.json"
 
 type Options struct {
-	Name        string
-	CoreVersion string
-	CliVersion  string
+	Name string
 }
 
 type Manifest struct {

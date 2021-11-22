@@ -17,16 +17,9 @@ import (
 	"github.com/customrealms/cli/server"
 )
 
-const VERSION = "0.4.5"
-const CR_CORE_VERSION_TARGET = "^0.2.0"
+const VERSION = "0.4.6"
 
 func main() {
-
-	// If there are no command line arguments
-	if len(os.Args) <= 1 {
-		fmt.Println("Missing command name: build, init")
-		os.Exit(1)
-	}
 
 	// Define the map of commands
 	commands := map[string]func() error{
@@ -41,11 +34,22 @@ func main() {
 		"yml":   crxYaml,
 	}
 
+	// If there are no command line arguments
+	if len(os.Args) <= 1 {
+		fmt.Println("Missing command name.")
+		fmt.Println("List of available commands:")
+		for cmd := range commands {
+			fmt.Printf(" -> crx %s ...\n", cmd)
+		}
+		fmt.Println()
+		os.Exit(1)
+	}
+
 	// Check for the command function
 	commandFunc, ok := commands[os.Args[1]]
 	if !ok {
 		fmt.Printf("Unsupported command %q\n", os.Args[1])
-		fmt.Println("List of commands:")
+		fmt.Println("List of available commands:")
 		for cmd := range commands {
 			fmt.Printf(" -> crx %s ...\n", cmd)
 		}
@@ -131,11 +135,9 @@ func crxInit() error {
 
 	// Create the init runner
 	initAction := initialize.InitAction{
-		Name:        filepath.Base(projectDir),
-		Dir:         projectDir,
-		Template:    nil,
-		CoreVersion: CR_CORE_VERSION_TARGET,
-		CliVersion:  fmt.Sprintf("^%s", VERSION),
+		Name:     filepath.Base(projectDir),
+		Dir:      projectDir,
+		Template: nil,
 	}
 
 	// Run the init action

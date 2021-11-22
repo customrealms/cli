@@ -10,11 +10,9 @@ import (
 )
 
 type InitAction struct {
-	Name        string
-	Dir         string
-	Template    template.Template
-	CoreVersion string
-	CliVersion  string
+	Name     string
+	Dir      string
+	Template template.Template
 }
 
 func (a *InitAction) Run(ctx context.Context) error {
@@ -40,9 +38,7 @@ func (a *InitAction) Run(ctx context.Context) error {
 		a.Template,
 		a.Dir,
 		&template.Options{
-			Name:        a.Name,
-			CoreVersion: a.CoreVersion,
-			CliVersion:  a.CliVersion,
+			Name: a.Name,
 		},
 	)
 	if err != nil {
