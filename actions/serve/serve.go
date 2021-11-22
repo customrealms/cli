@@ -85,7 +85,7 @@ func (a *ServeAction) Run(ctx context.Context) error {
 	fmt.Println()
 
 	fmt.Println("============================================================")
-	fmt.Printf("Downloading JAR file for %s server...", a.MinecraftVersion.ServerJarType())
+	fmt.Printf("Downloading JAR file for %s server...\n", a.MinecraftVersion.ServerJarType())
 	fmt.Println("============================================================")
 
 	// Create the name of the JAR file
