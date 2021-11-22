@@ -24,8 +24,14 @@ func (y *PluginYml) String() string {
 		fmt.Sprintf("api-version: %s", y.MinecraftVersion.ApiVersion()),
 		fmt.Sprintf("version: %s", y.PackageJSON.Version),
 		fmt.Sprintf("main: %s", JAR_MAIN_CLASS),
-		"",
 	)
+	if len(y.PackageJSON.Author) > 0 {
+		lines = append(lines, fmt.Sprintf("author: %s", y.PackageJSON.Author))
+	}
+	if len(y.PackageJSON.Website) > 0 {
+		lines = append(lines, fmt.Sprintf("website: %s", y.PackageJSON.Website))
+	}
+	lines = append(lines, "")
 
 	// Add the commands
 	if len(y.PackageJSON.Commands) > 0 {

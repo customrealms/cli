@@ -17,6 +17,8 @@ type PermissionAttr struct {
 type PackageJSON struct {
 	Name        string                     `json:"name"`
 	Version     string                     `json:"version"`
+	Author      string                     `json:"author"`
+	Website     string                     `json:"website"`
 	Commands    map[string]*CommandAttr    `json:"commands"`
 	Permissions map[string]*PermissionAttr `json:"permissions"`
 }
