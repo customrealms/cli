@@ -18,7 +18,7 @@ import (
 
 type BuildAction struct {
 	Project          *project.Project
-	JarTemplate      *JarTemplate
+	JarTemplate      JarTemplate
 	MinecraftVersion minecraft.Version
 	OutputFile       string
 }
@@ -45,11 +45,25 @@ func (a *BuildAction) Run(ctx context.Context) error {
 
 	fmt.Println()
 
-	// Download the jar template
-	var jarTemplateBuf bytes.Buffer
-	if err := a.JarTemplate.Download(&jarTemplateBuf); err != nil {
+	fmt.Println("============================================================")
+	fmt.Println("Downloading JAR plugin runtime")
+	fmt.Println("============================================================")
+
+	// Get the reader of the Jar file
+	jarReader, err := a.JarTemplate.Jar()
+	if err != nil {
 		return err
 	}
+	defer jarReader.Close()
+
+	// Copy the jar file to a buffer
+	var jarTemplateBuf bytes.Buffer
+	if _, err := io.Copy(&jarTemplateBuf, jarReader); err != nil {
+		return err
+	}
+
+	fmt.Println(" -> DONE")
+	fmt.Println()
 
 	// Make sure the directory above the output file exists
 	if err := os.MkdirAll(filepath.Dir(a.OutputFile), 0777); err != nil {

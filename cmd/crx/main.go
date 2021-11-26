@@ -152,10 +152,12 @@ func crxBuild() error {
 	var mcVersion string
 	var outputFile string
 	var operatingSystem string
+	var templateJarFile string
 	flag.StringVar(&projectDir, "p", ".", "plugin project directory")
 	flag.StringVar(&mcVersion, "mc", "", "Minecraft version number target")
 	flag.StringVar(&outputFile, "o", "", "output JAR file path")
 	flag.StringVar(&operatingSystem, "os", "", "operating system target (windows, macos, or linux)")
+	flag.StringVar(&templateJarFile, "jar", "", "template JAR file")
 	flag.CommandLine.Parse(os.Args[2:])
 
 	// Require the output file path
@@ -168,9 +170,16 @@ func crxBuild() error {
 	minecraftVersion := mustMinecraftVersion(mcVersion)
 
 	// Create the JAR template to build with
-	jarTemplate := build.JarTemplate{
-		MinecraftVersion: minecraftVersion,
-		OperatingSystem:  operatingSystem,
+	var jarTemplate build.JarTemplate
+	if len(templateJarFile) > 0 {
+		jarTemplate = &build.FileJarTemplate{
+			Filename: templateJarFile,
+		}
+	} else {
+		jarTemplate = &build.GitHubJarTemplate{
+			MinecraftVersion: minecraftVersion,
+			OperatingSystem:  operatingSystem,
+		}
 	}
 
 	// Create the project
@@ -181,7 +190,7 @@ func crxBuild() error {
 	// Create the build action
 	buildAction := build.BuildAction{
 		Project:          &crProject,
-		JarTemplate:      &jarTemplate,
+		JarTemplate:      jarTemplate,
 		MinecraftVersion: minecraftVersion,
 		OutputFile:       outputFile,
 	}
@@ -239,9 +248,11 @@ func crxBuildAndServe() error {
 	var mcVersion string
 	var outputFile string
 	var operatingSystem string
+	var templateJarFile string
 	flag.StringVar(&projectDir, "p", ".", "plugin project directory")
 	flag.StringVar(&mcVersion, "mc", "", "Minecraft version number target")
 	flag.StringVar(&outputFile, "o", "", "output JAR file path")
+	flag.StringVar(&templateJarFile, "jar", "", "template JAR file")
 	flag.StringVar(&operatingSystem, "os", "", "operating system target (windows, macos, or linux)")
 	flag.CommandLine.Parse(os.Args[2:])
 
@@ -267,9 +278,16 @@ func crxBuildAndServe() error {
 	defer cancel()
 
 	// Create the JAR template to build with
-	jarTemplate := build.JarTemplate{
-		MinecraftVersion: minecraftVersion,
-		OperatingSystem:  operatingSystem,
+	var jarTemplate build.JarTemplate
+	if len(templateJarFile) > 0 {
+		jarTemplate = &build.FileJarTemplate{
+			Filename: templateJarFile,
+		}
+	} else {
+		jarTemplate = &build.GitHubJarTemplate{
+			MinecraftVersion: minecraftVersion,
+			OperatingSystem:  operatingSystem,
+		}
 	}
 
 	// Create the project
@@ -280,7 +298,7 @@ func crxBuildAndServe() error {
 	// Create the build action
 	buildAction := build.BuildAction{
 		Project:          &crProject,
-		JarTemplate:      &jarTemplate,
+		JarTemplate:      jarTemplate,
 		MinecraftVersion: minecraftVersion,
 		OutputFile:       outputFile,
 	}
