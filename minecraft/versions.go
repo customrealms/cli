@@ -4,8 +4,8 @@ package minecraft
 //  1) We must have a JAR build of `bukkit-runtime` for that version
 //  2) There must be a PaperMC build in that Minecraft version
 var SupportedVersions = []Version{
-	&paperMcVersion{"1.17.1", 386},
-	&paperMcVersion{"1.16.5", 790},
+	&paperMcVersion{"1.17.1", 399},
+	&paperMcVersion{"1.16.5", 792},
 }
 
 // FindVersion finds a supported version with the given version string
