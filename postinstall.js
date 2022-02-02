@@ -9,7 +9,8 @@ const fs = require('fs');
 var ARCH_MAPPING = {
     "ia32": "386",
     "x64": "amd64",
-    "arm": "arm"
+    "arm": "arm",
+    "arm64": "arm64"
 };
 
 // Mapping between Node's `process.platform` to Golang's GOOS
@@ -137,7 +138,7 @@ async function install(callback) {
     var opts = parsePackageJson();
     if (!opts) return callback(INVALID_INPUT);
     mkdirp.sync(opts.binPath);
-    console.info(`Copying the relevant binary for your platform ${process.platform}`);
+    console.info(`Copying the relevant binary for your platform ${process.platform} (${process.arch})`);
 
     // Map the process platform and arch strings to the Go version
     const platform = PLATFORM_MAPPING[process.platform];
