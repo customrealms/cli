@@ -17,7 +17,7 @@ import (
 	"github.com/customrealms/cli/server"
 )
 
-const VERSION = "0.4.9"
+const VERSION = "0.4.10"
 
 func main() {
 
