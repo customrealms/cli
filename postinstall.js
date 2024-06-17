@@ -26,7 +26,7 @@ async function getInstallationPath() {
     // `npm bin` will output the path where binary files should be installed
 
     // const value = await execShellCommand("npm bin -g");
-    const value = "./node_modules/.bin"
+    const value = "../../.bin"
 
     var dir = null;
     if (!value || value.length === 0) {
