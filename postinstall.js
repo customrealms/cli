@@ -25,7 +25,8 @@ async function getInstallationPath() {
 
     // `npm bin` will output the path where binary files should be installed
 
-    const value = await execShellCommand("npm bin -g");
+    // const value = await execShellCommand("npm bin -g");
+    const value = "./node_modules/.bin"
 
     var dir = null;
     if (!value || value.length === 0) {
@@ -50,7 +51,7 @@ async function verifyAndPlaceBinary(binName, binPath, callback) {
     if (!fs.existsSync(path.join(binPath, binName))) return callback('Downloaded binary does not contain the binary specified in configuration - ' + binName);
 
     // Get installation path for executables under node
-    const installationPath=  await getInstallationPath();
+    const installationPath = await getInstallationPath();
     // Copy the executable to the path
     fs.rename(path.join(binPath, binName), path.join(installationPath, binName),(err)=>{
         if(!err){
