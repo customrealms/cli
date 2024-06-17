@@ -1,9 +1,10 @@
 package minecraft
 
 // SupportedVersions slice of all the supported Minecraft versions. To be supported, two things must be true:
-//  1) We must have a JAR build of `bukkit-runtime` for that version
-//  2) There must be a PaperMC build in that Minecraft version
+//  1. We must have a JAR build of `bukkit-runtime` for that version
+//  2. There must be a PaperMC build in that Minecraft version
 var SupportedVersions = []Version{
+	&paperMcVersion{"1.20.6", 147},
 	&paperMcVersion{"1.17.1", 399},
 	&paperMcVersion{"1.16.5", 792},
 }
