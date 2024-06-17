@@ -8,7 +8,7 @@ const fs = require('fs');
 // Mapping from Node's `process.arch` to Golang's GOARCH
 var ARCH_MAPPING = {
     "ia32": "386",
-    "x64": "amd64",
+    "x64": "amd64_v1",
     "arm": "arm",
     "arm64": "arm64"
 };
@@ -147,7 +147,7 @@ async function install(callback) {
     // Get the path to the binary within the package
     const src = path.join(
         'dist',
-        `customrealms-cli-${platform}-${arch}_${platform}_${arch}`,
+        `customrealms-cli_${platform}_${arch}`,
         opts.binName,
     );
 
