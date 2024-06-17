@@ -22,6 +22,17 @@ builds:
       - darwin
     goarch:
       - arm64
+  - id: customrealms-cli-darwin-arm64
+    ldflags:
+      - -s -w -X github.com/customrealms/cli/pkg/version.Version={{.Version}}
+    binary: crx
+    main: ./cmd/crx/main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    goarch:
+      - arm64
   - id: customrealms-cli-linux-amd64
     ldflags:
       - -s -w -X github.com/customrealms/cli/pkg/version.Version={{.Version}}
