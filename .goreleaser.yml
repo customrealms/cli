@@ -1,3 +1,4 @@
+version: 2
 project_name: customrealms-cli
 builds:
   - id: customrealms-cli-darwin-amd64
