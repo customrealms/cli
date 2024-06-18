@@ -43,6 +43,17 @@ func (a *BuildAction) Run(ctx context.Context) error {
 	}
 	defer os.RemoveAll(webpackOutputDir)
 
+	fmt.Println("============================================================")
+	fmt.Println("Targeting JavaScript code to ES5 using Babel")
+	fmt.Println("============================================================")
+
+	// Build the local directory
+	cmd = a.Project.CommandContext(ctx, "npx", "babel", filepath.Join(webpackOutputDir, "bundle.js"), "--out-file", filepath.Join(webpackOutputDir, "bundle-es5.js"), "--presets", "babel-preset-es2015")
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+	defer os.RemoveAll(webpackOutputDir)
+
 	fmt.Println()
 
 	fmt.Println("============================================================")
@@ -78,7 +89,7 @@ func (a *BuildAction) Run(ctx context.Context) error {
 	defer file.Close()
 
 	// Create a reader for the plugin source code
-	pluginCode, err := os.Open(filepath.Join(webpackOutputDir, "bundle.js"))
+	pluginCode, err := os.Open(filepath.Join(webpackOutputDir, "bundle-es5.js"))
 	if err != nil {
 		return err
 	}
