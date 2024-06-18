@@ -1,20 +1,20 @@
 package build
 
 import (
-	"archive/zip"
-	"bytes"
 	"context"
+	_ "embed"
 	"fmt"
-	"io"
 	"math/rand"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/customrealms/cli/minecraft"
 	"github.com/customrealms/cli/project"
 )
+
+//go:embed config/webpack.config.js
+var webpackConfig string
 
 type BuildAction struct {
 	Project          *project.Project
@@ -31,163 +31,36 @@ func (a *BuildAction) Run(ctx context.Context) error {
 		os.TempDir(),
 		fmt.Sprintf("cr-build-%d-%d", time.Now().Unix(), rand.Uint32()),
 	)
+	if err := os.MkdirAll(webpackOutputDir, 0777); err != nil {
+		return err
+	}
+	defer os.RemoveAll(webpackOutputDir)
+
+	// Write the webpack configuration file temporarily
+	webpackConfigFile := filepath.Join(webpackOutputDir, "webpack.config.js")
+	if err := os.WriteFile(webpackConfigFile, []byte(webpackConfig), 0777); err != nil {
+		return err
+	}
 
 	fmt.Println("============================================================")
 	fmt.Println("Bundling JavaScript code using Webpack")
 	fmt.Println("============================================================")
 
 	// Build the local directory
-	cmd := a.Project.CommandContext(ctx, "npx", "webpack-cli", "--mode=production", "-o", webpackOutputDir)
+	cmd := a.Project.CommandContext(ctx, "npx", "webpack-cli", "--mode=production", "-o", webpackOutputDir, "-c", webpackConfigFile, "--entry", "./src/main.ts")
 	if err := cmd.Run(); err != nil {
 		return err
 	}
-	defer os.RemoveAll(webpackOutputDir)
-
-	fmt.Println("============================================================")
-	fmt.Println("Targeting JavaScript code to ES5 using Babel")
-	fmt.Println("============================================================")
-
-	// Build the local directory
-	cmd = a.Project.CommandContext(ctx, "npx", "babel", filepath.Join(webpackOutputDir, "bundle.js"), "--out-file", filepath.Join(webpackOutputDir, "bundle-es5.js"), "--presets", "babel-preset-es2015")
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	defer os.RemoveAll(webpackOutputDir)
 
 	fmt.Println()
 
-	fmt.Println("============================================================")
-	fmt.Println("Downloading JAR plugin runtime")
-	fmt.Println("============================================================")
-
-	// Get the reader of the Jar file
-	jarReader, err := a.JarTemplate.Jar()
-	if err != nil {
-		return err
-	}
-	defer jarReader.Close()
-
-	// Copy the jar file to a buffer
-	var jarTemplateBuf bytes.Buffer
-	if _, err := io.Copy(&jarTemplateBuf, jarReader); err != nil {
-		return err
-	}
-
-	fmt.Println(" -> DONE")
-	fmt.Println()
-
-	// Make sure the directory above the output file exists
-	if err := os.MkdirAll(filepath.Dir(a.OutputFile), 0777); err != nil {
-		return err
-	}
-
-	// Open the output file for the final JAR
-	file, err := os.Create(a.OutputFile)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	// Create a reader for the plugin source code
-	pluginCode, err := os.Open(filepath.Join(webpackOutputDir, "bundle-es5.js"))
-	if err != nil {
-		return err
-	}
-	defer pluginCode.Close()
-
-	// Read the package.json file
-	packageJson, err := a.Project.PackageJSON()
-	if err != nil {
-		return err
-	}
-
-	// Define the plugin.yml details for the plugin
-	pluginYml := PluginYml{
+	// Package the jar file
+	ja := JarAction{
+		Project:          a.Project,
+		JarTemplate:      a.JarTemplate,
 		MinecraftVersion: a.MinecraftVersion,
-		PackageJSON:      packageJson,
+		BundleFile:       filepath.Join(webpackOutputDir, "bundle.js"),
+		OutputFile:       a.OutputFile,
 	}
-
-	// Produce the final JAR file
-	if err := WriteJarFile(
-		file,
-		jarTemplateBuf.Bytes(),
-		pluginCode,
-		&pluginYml,
-	); err != nil {
-		return err
-	}
-
-	fmt.Println("Wrote JAR file to: ", a.OutputFile)
-
-	return nil
-
-}
-
-func WriteJarFile(
-	writer io.Writer,
-	templateJarData []byte,
-	pluginSourceCode io.Reader,
-	pluginYml *PluginYml,
-) error {
-
-	fmt.Println("============================================================")
-	fmt.Println("Generating final JAR file for your plugin")
-	fmt.Println("============================================================")
-
-	// Create the ZIP writer
-	zw := zip.NewWriter(writer)
-	defer zw.Close()
-
-	// Create the ZIP reader from the base YML
-	templateJarReader := bytes.NewReader(templateJarData)
-	zr, err := zip.NewReader(templateJarReader, int64(len(templateJarData)))
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(" -> Copying template files to new JAR file")
-
-	// Copy all the files back to the jar file
-	for _, f := range zr.File {
-
-		// Skip some files
-		if f.Name == "plugin.js" || f.Name == "plugin.yml" {
-			continue
-		}
-
-		// Copy the rest
-		if err := zw.Copy(f); err != nil {
-			return err
-		}
-
-	}
-
-	fmt.Println(" -> Writing bundle JS code to JAR file")
-
-	// Write the plugin code to the jar
-	codeFile, err := zw.Create("plugin.js")
-	if err != nil {
-		return err
-	}
-	if _, err := io.Copy(codeFile, pluginSourceCode); err != nil {
-		return err
-	}
-
-	fmt.Println(" -> Writing plugin.yml file to JAR file")
-
-	// Write the plugin YML file to the jar
-	ymlFile, err := zw.Create("plugin.yml")
-	if err != nil {
-		return err
-	}
-	if _, err := io.Copy(ymlFile, strings.NewReader(pluginYml.String())); err != nil {
-		return err
-	}
-
-	fmt.Println(" -> DONE")
-	fmt.Println()
-
-	// We're done, no errors
-	return nil
-
+	return ja.Run(ctx)
 }

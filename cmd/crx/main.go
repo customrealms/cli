@@ -200,6 +200,61 @@ func crxBuild() error {
 
 }
 
+func crxJar() error {
+
+	// Parse command line arguments
+	var projectDir string
+	var mcVersion string
+	var outputFile string
+	var operatingSystem string
+	var templateJarFile string
+	flag.StringVar(&projectDir, "p", ".", "plugin project directory")
+	flag.StringVar(&mcVersion, "mc", "", "Minecraft version number target")
+	flag.StringVar(&outputFile, "o", "", "output JAR file path")
+	flag.StringVar(&operatingSystem, "os", "", "operating system target (windows, macos, or linux)")
+	flag.StringVar(&templateJarFile, "jar", "", "template JAR file")
+	flag.CommandLine.Parse(os.Args[2:])
+
+	// Require the output file path
+	if len(outputFile) == 0 {
+		fmt.Println("Output JAR file is required: -o option")
+		os.Exit(1)
+	}
+
+	// Get the Minecraft version
+	minecraftVersion := mustMinecraftVersion(mcVersion)
+
+	// Create the JAR template to build with
+	var jarTemplate build.JarTemplate
+	if len(templateJarFile) > 0 {
+		jarTemplate = &build.FileJarTemplate{
+			Filename: templateJarFile,
+		}
+	} else {
+		jarTemplate = &build.GitHubJarTemplate{
+			MinecraftVersion: minecraftVersion,
+			OperatingSystem:  operatingSystem,
+		}
+	}
+
+	// Create the project
+	crProject := project.Project{
+		Dir: projectDir,
+	}
+
+	// Create the build action
+	buildAction := build.JarAction{
+		Project:          &crProject,
+		JarTemplate:      jarTemplate,
+		MinecraftVersion: minecraftVersion,
+		OutputFile:       outputFile,
+	}
+
+	// Run the build action
+	return buildAction.Run(context.Background())
+
+}
+
 func crxServe() error {
 
 	// Parse command line arguments
