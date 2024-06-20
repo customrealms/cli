@@ -151,12 +151,10 @@ func crxBuild() error {
 	var projectDir string
 	var mcVersion string
 	var outputFile string
-	var operatingSystem string
 	var templateJarFile string
 	flag.StringVar(&projectDir, "p", ".", "plugin project directory")
 	flag.StringVar(&mcVersion, "mc", "", "Minecraft version number target")
 	flag.StringVar(&outputFile, "o", "", "output JAR file path")
-	flag.StringVar(&operatingSystem, "os", "", "operating system target (windows, macos, or linux)")
 	flag.StringVar(&templateJarFile, "jar", "", "template JAR file")
 	flag.CommandLine.Parse(os.Args[2:])
 
@@ -178,7 +176,6 @@ func crxBuild() error {
 	} else {
 		jarTemplate = &build.GitHubJarTemplate{
 			MinecraftVersion: minecraftVersion,
-			OperatingSystem:  operatingSystem,
 		}
 	}
 
@@ -206,12 +203,10 @@ func crxJar() error {
 	var projectDir string
 	var mcVersion string
 	var outputFile string
-	var operatingSystem string
 	var templateJarFile string
 	flag.StringVar(&projectDir, "p", ".", "plugin project directory")
 	flag.StringVar(&mcVersion, "mc", "", "Minecraft version number target")
 	flag.StringVar(&outputFile, "o", "", "output JAR file path")
-	flag.StringVar(&operatingSystem, "os", "", "operating system target (windows, macos, or linux)")
 	flag.StringVar(&templateJarFile, "jar", "", "template JAR file")
 	flag.CommandLine.Parse(os.Args[2:])
 
@@ -233,7 +228,6 @@ func crxJar() error {
 	} else {
 		jarTemplate = &build.GitHubJarTemplate{
 			MinecraftVersion: minecraftVersion,
-			OperatingSystem:  operatingSystem,
 		}
 	}
 
@@ -302,13 +296,11 @@ func crxBuildAndServe() error {
 	var projectDir string
 	var mcVersion string
 	var outputFile string
-	var operatingSystem string
 	var templateJarFile string
 	flag.StringVar(&projectDir, "p", ".", "plugin project directory")
 	flag.StringVar(&mcVersion, "mc", "", "Minecraft version number target")
 	flag.StringVar(&outputFile, "o", "", "output JAR file path")
 	flag.StringVar(&templateJarFile, "jar", "", "template JAR file")
-	flag.StringVar(&operatingSystem, "os", "", "operating system target (windows, macos, or linux)")
 	flag.CommandLine.Parse(os.Args[2:])
 
 	// Get the Minecraft version
@@ -341,7 +333,6 @@ func crxBuildAndServe() error {
 	} else {
 		jarTemplate = &build.GitHubJarTemplate{
 			MinecraftVersion: minecraftVersion,
-			OperatingSystem:  operatingSystem,
 		}
 	}
 
