@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/customrealms/cli/minecraft"
-	"github.com/customrealms/cli/project"
+	"github.com/customrealms/cli/internal/minecraft"
+	"github.com/customrealms/cli/internal/project"
 )
 
 type JarAction struct {

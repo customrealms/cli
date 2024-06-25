@@ -3,7 +3,7 @@ package server
 import (
 	"io"
 
-	"github.com/customrealms/cli/minecraft"
+	"github.com/customrealms/cli/internal/minecraft"
 )
 
 type JarFetcher interface {

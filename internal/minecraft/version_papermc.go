@@ -32,3 +32,7 @@ func (v *paperMcVersion) ServerJarUrl() string {
 		v.paperBuild,
 	)
 }
+
+func (v *paperMcVersion) PluginJarUrl() string {
+	return fmt.Sprintf("https://github.com/customrealms/bukkit-runtime/releases/latest/download/bukkit-runtime-%s.jar", v.version)
+}
