@@ -1,28 +1,88 @@
 package minecraft
 
-// SupportedVersions slice of all the supported Minecraft versions. To be supported, two things must be true:
-//  1. We must have a JAR build of `bukkit-runtime` for that version
-//  2. There must be a PaperMC build in that Minecraft version
-var SupportedVersions = []Version{
-	&paperMcVersion{"1.20.6", 147},
-	&paperMcVersion{"1.17.1", 399},
-	&paperMcVersion{"1.16.5", 792},
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+type paperMcBuilds struct {
+	Builds []paperMcBuild `json:"builds"`
 }
 
-// FindVersion finds a supported version with the given version string
-func FindVersion(version string) Version {
-	for _, v := range SupportedVersions {
-		if v.String() == version || v.ApiVersion() == version {
-			return v
-		}
-	}
-	return nil
+type paperMcBuild struct {
+	Build     int    `json:"build"`
+	Channel   string `json:"channel"`
+	Downloads struct {
+		Application struct {
+			Name   string `json:"name"`
+			Sha256 string `json:"sha256"`
+		} `json:"application"`
+	} `json:"downloads"`
 }
 
-// LatestVersion gets the latest Minecraft version available
-func LatestVersion() Version {
-	if len(SupportedVersions) == 0 {
-		return nil
+func LookupVersion(ctx context.Context, versionStr string) (Version, error) {
+	// Lookup the version from PaperMC
+	builds, err := downloadJSON[paperMcBuilds](ctx, fmt.Sprintf("https://papermc.io/api/v2/projects/paper/versions/%s", versionStr))
+	if err != nil {
+		return nil, fmt.Errorf("download builds list: %w", err)
 	}
-	return SupportedVersions[0]
+	if builds == nil || len(builds.Builds) == 0 {
+		return nil, fmt.Errorf("no builds found for version %s", versionStr)
+	}
+
+	// The last entry is the latest build
+	build := builds.Builds[len(builds.Builds)-1]
+	version := &paperMcVersion{versionStr, build.Build}
+
+	// Check that the version has a downloadable plugin JAR
+	ok, err := checkHttpOK(ctx, version.PluginJarUrl())
+	if err != nil {
+		return nil, fmt.Errorf("check plugin jar url: %w", err)
+	}
+	if !ok {
+		return nil, fmt.Errorf("no customrealms bukkit-runtime found for version %s", versionStr)
+	}
+	return version, nil
+}
+
+func downloadJSON[T any](ctx context.Context, url string) (*T, error) {
+	// Create the HTTP request
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("create http request: %w", err)
+	}
+
+	// Send the HTTP request
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("send http request: %w", err)
+	}
+	defer res.Body.Close()
+
+	// Decode the JSON response
+	var result T
+	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("decode json response: %w", err)
+	}
+	return &result, nil
+}
+
+func checkHttpOK(ctx context.Context, url string) (bool, error) {
+	// Create the HTTP request
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, url, nil)
+	if err != nil {
+		return false, fmt.Errorf("create http request: %w", err)
+	}
+
+	// Send the HTTP request
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false, fmt.Errorf("send http request: %w", err)
+	}
+	defer res.Body.Close()
+
+	// Check the status code
+	return res.StatusCode == http.StatusOK, nil
 }

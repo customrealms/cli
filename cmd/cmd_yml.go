@@ -14,13 +14,17 @@ type YmlCmd struct {
 }
 
 func (c *YmlCmd) Run() error {
+	// Root context for the CLI
+	ctx, cancel := rootContext()
+	defer cancel()
+
 	// Default to the current working directory
 	if c.ProjectDir == "" {
 		c.ProjectDir, _ = os.Getwd()
 	}
 
 	// Get the Minecraft version
-	minecraftVersion := mustMinecraftVersion(c.McVersion)
+	minecraftVersion := mustMinecraftVersion(ctx, c.McVersion)
 
 	// Create the project
 	crProject := project.Project{

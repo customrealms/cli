@@ -12,17 +12,10 @@ type GitHubJarTemplate struct {
 	MinecraftVersion minecraft.Version
 }
 
-func (t *GitHubJarTemplate) getJarUrl() string {
-	return fmt.Sprintf(
-		"https://github.com/customrealms/bukkit-runtime/releases/latest/download/bukkit-runtime-%s.jar",
-		t.MinecraftVersion,
-	)
-}
-
 func (t *GitHubJarTemplate) Jar() (io.ReadCloser, error) {
 
 	// Get the JAR url
-	jarUrl := t.getJarUrl()
+	jarUrl := t.MinecraftVersion.PluginJarUrl()
 
 	// Download the JAR file
 	fmt.Printf(" -> %s\n", jarUrl)

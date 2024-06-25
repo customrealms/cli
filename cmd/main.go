@@ -32,26 +32,14 @@ func main() {
 
 // mustMinecraftVersion takes a user-supplied Minecraft version string and resolves the corresponding minecraft.Version
 // instance. If nothing can be found, it exits the process
-func mustMinecraftVersion(versionString string) minecraft.Version {
+func mustMinecraftVersion(ctx context.Context, versionString string) minecraft.Version {
 	if len(versionString) == 0 {
-		mcVersion := minecraft.LatestVersion()
-		if mcVersion == nil {
-			fmt.Println("Failed to resolve the default Minecraft version")
-			os.Exit(1)
-		}
-		return mcVersion
-	} else {
-		minecraftVersion := minecraft.FindVersion(versionString)
-		if minecraftVersion == nil {
-			fmt.Println("Unsupported Minecraft version: ", versionString)
-			fmt.Println()
-			fmt.Println("Please use a supported Minecraft version:")
-			for _, version := range minecraft.SupportedVersions {
-				fmt.Println(" -> ", version)
-			}
-			fmt.Println()
-			os.Exit(1)
-		}
-		return minecraftVersion
+		versionString = "1.20.6"
 	}
+	minecraftVersion, err := minecraft.LookupVersion(ctx, versionString)
+	if err != nil {
+		fmt.Println("Failed to resolve the Minecraft version: ", err)
+		os.Exit(1)
+	}
+	return minecraftVersion
 }

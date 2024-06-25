@@ -25,7 +25,7 @@ func (c *BuildCmd) Run() error {
 	}
 
 	// Get the Minecraft version
-	minecraftVersion := mustMinecraftVersion(c.McVersion)
+	minecraftVersion := mustMinecraftVersion(ctx, c.McVersion)
 
 	// Create the JAR template to build with
 	var jarTemplate build.JarTemplate

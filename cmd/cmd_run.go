@@ -26,7 +26,7 @@ func (c *RunCmd) Run() error {
 	}
 
 	// Get the Minecraft version
-	minecraftVersion := mustMinecraftVersion(c.McVersion)
+	minecraftVersion := mustMinecraftVersion(ctx, c.McVersion)
 
 	// Generate a temp filename for the plugin JAR file
 	ofile, _ := os.CreateTemp("", "cr-jar-output-*.jar")
