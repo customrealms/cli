@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/customrealms/cli/internal/actions/build"
+	"github.com/customrealms/cli/internal/build"
 	"github.com/customrealms/cli/internal/project"
 )
 
