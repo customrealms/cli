@@ -1,17 +1,22 @@
 package main
 
 import (
+	"errors"
+	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/customrealms/cli/internal/build"
 	"github.com/customrealms/cli/internal/project"
 	"github.com/customrealms/cli/internal/serve"
 	"github.com/customrealms/cli/internal/server"
+	"github.com/fsnotify/fsnotify"
+	"golang.org/x/sync/errgroup"
 )
 
 type RunCmd struct {
 	ProjectDir      string `name:"project" short:"p" usage:"plugin project directory" optional:""`
-	McVersion       string `name:"mc" short:"mc" usage:"Minecraft version number target" optional:""`
+	McVersion       string `name:"mc" usage:"Minecraft version number target" optional:""`
 	TemplateJarFile string `name:"jar" short:"t" usage:"template JAR file" optional:""`
 }
 
@@ -70,11 +75,77 @@ func (c *RunCmd) Run() error {
 		return err
 	}
 
-	// Create the serve runner
-	serveAction := serve.ServeAction{
-		MinecraftVersion: minecraftVersion,
-		PluginJarPath:    outputFile,
-		ServerJarFetcher: serverJarFetcher,
-	}
-	return serveAction.Run(ctx)
+	eg, ctx := errgroup.WithContext(ctx)
+
+	chanPluginUpdated := make(chan struct{})
+	chanServerStopped := make(chan struct{})
+	eg.Go(func() error {
+		// Create new watcher.
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			return err
+		}
+		defer watcher.Close()
+
+		// Start listening for events.
+		go func() {
+			for {
+				select {
+				case event, ok := <-watcher.Events:
+					if !ok {
+						return
+					}
+					if event.Has(fsnotify.Write) {
+						// Rebuild the plugin JAR file
+						if err := buildAction.Run(ctx); err != nil {
+							log.Println("Error: ", err)
+						} else {
+							select {
+							case chanPluginUpdated <- struct{}{}:
+							case <-ctx.Done():
+								return
+							}
+						}
+					}
+				case err, ok := <-watcher.Errors:
+					if !ok {
+						return
+					}
+					log.Println("error:", err)
+				case <-ctx.Done():
+					return
+				case <-chanServerStopped:
+					return
+				}
+			}
+		}()
+
+		// Add the project directory and src directory to the watcher
+		if err := errors.Join(
+			watcher.Add(c.ProjectDir),
+			watcher.Add(filepath.Join(c.ProjectDir, "src")),
+		); err != nil {
+			return err
+		}
+
+		// Block until the server is stopped
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-chanServerStopped:
+			return nil
+		}
+	})
+	eg.Go(func() error {
+		defer close(chanServerStopped)
+
+		// Create the serve runner
+		serveAction := serve.ServeAction{
+			MinecraftVersion: minecraftVersion,
+			PluginJarPath:    outputFile,
+			ServerJarFetcher: serverJarFetcher,
+		}
+		return serveAction.Run(ctx, chanPluginUpdated)
+	})
+	return eg.Wait()
 }

@@ -10,7 +10,7 @@ import (
 
 type YmlCmd struct {
 	ProjectDir string `name:"project" short:"p" usage:"plugin project directory" optional:""`
-	McVersion  string `name:"mc" short:"mc" usage:"Minecraft version number target" optional:""`
+	McVersion  string `name:"mc" usage:"Minecraft version number target" optional:""`
 }
 
 func (c *YmlCmd) Run() error {

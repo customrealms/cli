@@ -24,7 +24,7 @@ type paperMcBuild struct {
 
 func LookupVersion(ctx context.Context, versionStr string) (Version, error) {
 	// Lookup the version from PaperMC
-	builds, err := downloadJSON[paperMcBuilds](ctx, fmt.Sprintf("https://papermc.io/api/v2/projects/paper/versions/%s", versionStr))
+	builds, err := downloadJSON[paperMcBuilds](ctx, fmt.Sprintf("https://papermc.io/api/v2/projects/paper/versions/%s/builds", versionStr))
 	if err != nil {
 		return nil, fmt.Errorf("download builds list: %w", err)
 	}
@@ -48,6 +48,7 @@ func LookupVersion(ctx context.Context, versionStr string) (Version, error) {
 }
 
 func downloadJSON[T any](ctx context.Context, url string) (*T, error) {
+	fmt.Println(url)
 	// Create the HTTP request
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {

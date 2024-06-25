@@ -12,11 +12,11 @@ import (
 )
 
 var cli struct {
-	VersionCmd VersionCmd `cmd:"" help:"Show the version of the CLI."`
-	InitCmd    InitCmd    `cmd:"" help:"Initialize a new plugin project."`
-	BuildCmd   BuildCmd   `cmd:"" help:"Build the plugin JAR file."`
-	RunCmd     RunCmd     `cmd:"" help:"Build and serve the plugin in a Minecraft server."`
-	YmlCmd     YmlCmd     `cmd:"" help:"Generate the plugin.yml file."`
+	VersionCmd VersionCmd `cmd:"" name:"version" help:"Show the version of the CLI."`
+	InitCmd    InitCmd    `cmd:"" name:"init" help:"Initialize a new plugin project."`
+	BuildCmd   BuildCmd   `cmd:"" name:"build" help:"Build the plugin JAR file."`
+	RunCmd     RunCmd     `cmd:"" name:"run" help:"Build and serve the plugin in a Minecraft server."`
+	YmlCmd     YmlCmd     `cmd:"" name:"yml" help:"Generate the plugin.yml file."`
 }
 
 func rootContext() (context.Context, context.CancelFunc) {

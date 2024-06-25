@@ -10,6 +10,7 @@ import (
 
 	"github.com/customrealms/cli/internal/minecraft"
 	"github.com/customrealms/cli/internal/server"
+	"golang.org/x/sync/errgroup"
 )
 
 type ServeAction struct {
@@ -61,7 +62,7 @@ func copyFile(from, to string) error {
 	return nil
 }
 
-func (a *ServeAction) Run(ctx context.Context) error {
+func (a *ServeAction) Run(ctx context.Context, chanPluginUpdated <-chan struct{}) error {
 
 	// Check if Java is installed on the machine
 	if _, err := exec.LookPath("java"); err != nil {
@@ -126,12 +127,39 @@ func (a *ServeAction) Run(ctx context.Context) error {
 	fmt.Println("============================================================")
 	fmt.Println()
 
-	// Run the server
-	cmd := exec.CommandContext(ctx, "java", "-jar", jarBase, "-nogui")
-	cmd.Dir = dir
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	eg, ctx := errgroup.WithContext(ctx)
 
+	chanServerStopped := make(chan struct{})
+	eg.Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-chanServerStopped:
+				return nil
+			case _, ok := <-chanPluginUpdated:
+				if !ok {
+					return nil
+				}
+			}
+
+			// Copy the plugin file to the server
+			if err := copyFile(a.PluginJarPath, filepath.Join(pluginsDir, filepath.Base(a.PluginJarPath))); err != nil {
+				return err
+			}
+			fmt.Println("Plugin JAR updated. Run `/reload confirm` to reload the plugin.")
+		}
+	})
+	eg.Go(func() error {
+		defer close(chanServerStopped)
+
+		// Run the server
+		cmd := exec.CommandContext(ctx, "java", "-jar", jarBase, "-nogui")
+		cmd.Dir = dir
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		return cmd.Run()
+	})
+	return eg.Wait()
 }
