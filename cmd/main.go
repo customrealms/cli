@@ -11,6 +11,12 @@ import (
 	"github.com/customrealms/cli/internal/minecraft"
 )
 
+var (
+	version = "dev"
+	// commit  = "none"
+	// date    = "unknown"
+)
+
 var cli struct {
 	VersionCmd VersionCmd `cmd:"" name:"version" help:"Show the version of the CLI."`
 	InitCmd    InitCmd    `cmd:"" name:"init" help:"Initialize a new plugin project."`
