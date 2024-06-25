@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/customrealms/cli/actions/initialize/template"
+	"github.com/customrealms/cli/internal/actions/initialize/template"
 )
 
 type InitAction struct {

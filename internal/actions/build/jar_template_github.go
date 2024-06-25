@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/customrealms/cli/minecraft"
+	"github.com/customrealms/cli/internal/minecraft"
 )
 
 type GitHubJarTemplate struct {

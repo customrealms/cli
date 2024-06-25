@@ -9,22 +9,21 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/customrealms/cli/actions/build"
-	"github.com/customrealms/cli/actions/initialize"
-	"github.com/customrealms/cli/actions/serve"
-	"github.com/customrealms/cli/minecraft"
-	"github.com/customrealms/cli/project"
-	"github.com/customrealms/cli/server"
+	"github.com/customrealms/cli/internal/actions/build"
+	"github.com/customrealms/cli/internal/actions/initialize"
+	"github.com/customrealms/cli/internal/actions/serve"
+	"github.com/customrealms/cli/internal/minecraft"
+	"github.com/customrealms/cli/internal/project"
+	"github.com/customrealms/cli/internal/server"
+	"github.com/customrealms/cli/pkg/version"
 )
-
-const VERSION = "0.4.10"
 
 func main() {
 
 	// Define the map of commands
 	commands := map[string]func() error{
 		"version": func() error {
-			fmt.Printf("customrealms-cli (crx) v%s\n", VERSION)
+			fmt.Printf("customrealms-cli (crx) v%s\n", version.Version)
 			return nil
 		},
 		"init":  crxInit,

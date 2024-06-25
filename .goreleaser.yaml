@@ -15,7 +15,7 @@ builds:
       - linux
       - windows
       - darwin
-    main: ./cmd/crx/main.go
+    main: ./cmd/main.go
     binary: crx
     ldflags:
       - -s -w -X github.com/customrealms/cli/pkg/version.Version={{.Version}}
