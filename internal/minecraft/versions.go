@@ -48,7 +48,6 @@ func LookupVersion(ctx context.Context, versionStr string) (Version, error) {
 }
 
 func downloadJSON[T any](ctx context.Context, url string) (*T, error) {
-	fmt.Println(url)
 	// Create the HTTP request
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
