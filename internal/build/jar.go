@@ -8,14 +8,15 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/customrealms/cli/internal/minecraft"
+	"github.com/customrealms/cli/internal/pluginyml"
 	"github.com/customrealms/cli/internal/project"
+	"gopkg.in/yaml.v3"
 )
 
 type JarAction struct {
-	Project          *project.Project
+	Project          project.Project
 	JarTemplate      JarTemplate
 	MinecraftVersion minecraft.Version
 	BundleFile       string
@@ -62,16 +63,10 @@ func (a *JarAction) Run(ctx context.Context) error {
 	}
 	defer pluginCode.Close()
 
-	// Read the package.json file
-	packageJson, err := a.Project.PackageJSON()
+	// Generate the plugin.yml file for the project
+	pluginYML, err := GeneratePluginYML(a.Project, a.MinecraftVersion)
 	if err != nil {
-		return err
-	}
-
-	// Define the plugin.yml details for the plugin
-	pluginYml := PluginYml{
-		MinecraftVersion: a.MinecraftVersion,
-		PackageJSON:      packageJson,
+		return fmt.Errorf("generating plugin.yml: %w", err)
 	}
 
 	// Produce the final JAR file
@@ -79,7 +74,7 @@ func (a *JarAction) Run(ctx context.Context) error {
 		file,
 		jarTemplateBuf.Bytes(),
 		pluginCode,
-		&pluginYml,
+		pluginYML,
 	); err != nil {
 		return err
 	}
@@ -94,7 +89,7 @@ func WriteJarFile(
 	writer io.Writer,
 	templateJarData []byte,
 	pluginSourceCode io.Reader,
-	pluginYml *PluginYml,
+	pluginYML *pluginyml.Plugin,
 ) error {
 
 	fmt.Println("============================================================")
@@ -147,8 +142,10 @@ func WriteJarFile(
 	if err != nil {
 		return err
 	}
-	if _, err := io.Copy(ymlFile, strings.NewReader(pluginYml.String())); err != nil {
-		return err
+	enc := yaml.NewEncoder(ymlFile)
+	enc.SetIndent(2)
+	if err := enc.Encode(pluginYML); err != nil {
+		return fmt.Errorf("encoding plugin.yml: %w", err)
 	}
 
 	fmt.Println(" -> DONE")

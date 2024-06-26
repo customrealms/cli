@@ -17,7 +17,7 @@ import (
 var webpackConfig string
 
 type BuildAction struct {
-	Project          *project.Project
+	Project          project.Project
 	JarTemplate      JarTemplate
 	MinecraftVersion minecraft.Version
 	OutputFile       string
@@ -47,8 +47,13 @@ func (a *BuildAction) Run(ctx context.Context) error {
 	fmt.Println("============================================================")
 
 	// Build the local directory
-	cmd := a.Project.CommandContext(ctx, "npx", "webpack-cli", "--mode=production", "-o", webpackOutputDir, "-c", webpackConfigFile, "--entry", "./src/main.ts")
-	if err := cmd.Run(); err != nil {
+	err := a.Project.Exec(ctx, "npx", "webpack-cli",
+		"--mode=production",
+		"-o", webpackOutputDir,
+		"-c", webpackConfigFile,
+		"--entry", "./src/main.ts",
+	)
+	if err != nil {
 		return err
 	}
 

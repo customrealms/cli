@@ -1,90 +1,65 @@
 package build
 
 import (
+	"errors"
 	"fmt"
-	"strings"
+	"log"
 
 	"github.com/customrealms/cli/internal/minecraft"
+	"github.com/customrealms/cli/internal/pluginyml"
 	"github.com/customrealms/cli/internal/project"
 )
 
-const JAR_MAIN_CLASS = "io.customrealms.MainPlugin"
+const JarMainClass = "io.customrealms.MainPlugin"
 
-type PluginYml struct {
-	MinecraftVersion minecraft.Version
-	PackageJSON      *project.PackageJSON
-}
-
-func (y *PluginYml) String() string {
-	var lines []string
-
-	// General plugin details
-	lines = append(lines,
-		fmt.Sprintf("name: %s", y.PackageJSON.Name),
-		fmt.Sprintf("api-version: %s", y.MinecraftVersion.ApiVersion()),
-		fmt.Sprintf("version: %s", y.PackageJSON.Version),
-		fmt.Sprintf("main: %s", JAR_MAIN_CLASS),
-	)
-	if len(y.PackageJSON.Author) > 0 {
-		lines = append(lines, fmt.Sprintf("author: %s", y.PackageJSON.Author))
+func GeneratePluginYML(project project.Project, version minecraft.Version) (*pluginyml.Plugin, error) {
+	// Read the package.json file
+	packageJSON, err := project.PackageJSON()
+	if err != nil {
+		return nil, fmt.Errorf("getting package.json: %w", err)
 	}
-	if len(y.PackageJSON.Website) > 0 {
-		lines = append(lines, fmt.Sprintf("website: %s", y.PackageJSON.Website))
-	}
-	lines = append(lines, "")
 
-	// Add the commands
-	if len(y.PackageJSON.Commands) > 0 {
-		lines = append(lines, "commands:")
-		for key, attrs := range y.PackageJSON.Commands {
-			lines = append(lines, indent(1)+fmt.Sprintf("%s:", key))
-			if attrs != nil {
-				if len(attrs.Description) > 0 {
-					lines = append(lines, indent(2)+fmt.Sprintf("description: %s", attrs.Description))
-				}
-				if len(attrs.Aliases) > 0 {
-					lines = append(lines, indent(2)+fmt.Sprintf("aliases: [%s]", strings.Join(attrs.Aliases, ", ")))
-				}
-				if len(attrs.Permission) > 0 {
-					lines = append(lines, indent(2)+fmt.Sprintf("permission: %s", attrs.Permission))
-				}
-				if len(attrs.PermissionMessage) > 0 {
-					lines = append(lines, indent(2)+fmt.Sprintf("permision-message: %s", attrs.PermissionMessage))
-				}
-				if len(attrs.Usage) > 0 {
-					lines = append(lines, indent(2)+fmt.Sprintf("usage: %q", attrs.Usage))
-				}
-			}
+	// Read the plugin.yml file
+	plugin, err := project.PluginYML()
+	if err != nil {
+		return nil, fmt.Errorf("getting plugin.yml: %w", err)
+	}
+
+	// If plugin.yml and package.json are both missing, it's an error
+	if packageJSON == nil && plugin == nil {
+		return nil, errors.New("missing both package.json and plugin.yml")
+	}
+
+	// If there is no plugin.yml file present, create one
+	if plugin == nil {
+		plugin = &pluginyml.Plugin{}
+		plugin.Name = packageJSON.Name
+	}
+
+	// Set the main Java class for the plugin
+	plugin.Main = JarMainClass
+
+	// Set the Bukkit API version for the plugin
+	if version != nil {
+		apiVersion := version.ApiVersion()
+		plugin.ApiVersion = &apiVersion
+	}
+
+	// If there is a package.json file
+	if packageJSON != nil {
+		// Update the version if it's missing
+		if plugin.Version == "" && packageJSON.Version != "" {
+			plugin.Version = packageJSON.Version
+		} else if plugin.Version == "" && packageJSON.Version == "" {
+			log.Println("No version found in plugin.yml or package.json. Consider adding a version to package.json.")
+			log.Println("Using version '0.0.0' as a fallback.")
+			plugin.Version = "0.0.0"
+		} else if plugin.Version != packageJSON.Version {
+			log.Println("Version mismatch between plugin.yml and package.json. Consider removing `version` from plugin.yml.")
+			log.Printf("Using version '%s' from plugin.yml", plugin.Version)
 		}
-		lines = append(lines, "")
 	}
 
-	// Add the permissions
-	if len(y.PackageJSON.Permissions) > 0 {
-		lines = append(lines, "permissions:")
-		for key, attrs := range y.PackageJSON.Permissions {
-			lines = append(lines, indent(1)+fmt.Sprintf("%s:", key))
-			if attrs != nil {
-				if len(attrs.Description) > 0 {
-					lines = append(lines, indent(2)+fmt.Sprintf("description: %s", attrs.Description))
-				}
-				if attrs.Default != nil {
-					lines = append(lines, indent(2)+fmt.Sprintf("default: %t", *attrs.Default))
-				}
-				if attrs.Children != nil {
-					lines = append(lines, indent(2)+"children:")
-					for childKey, childVal := range attrs.Children {
-						lines = append(lines, indent(3)+fmt.Sprintf("%s: %t", childKey, childVal))
-					}
-				}
-			}
-		}
-		lines = append(lines, "")
-	}
-
-	return strings.Join(lines, "\n")
-}
-
-func indent(level int) string {
-	return strings.Repeat(" ", 2*level)
+	// Return the plugin yml
+	return plugin, nil
 }

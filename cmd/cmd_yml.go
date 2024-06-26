@@ -6,6 +6,7 @@ import (
 
 	"github.com/customrealms/cli/internal/build"
 	"github.com/customrealms/cli/internal/project"
+	"gopkg.in/yaml.v3"
 )
 
 type YmlCmd struct {
@@ -27,22 +28,19 @@ func (c *YmlCmd) Run() error {
 	minecraftVersion := mustMinecraftVersion(ctx, c.McVersion)
 
 	// Create the project
-	crProject := project.Project{
-		Dir: c.ProjectDir,
-	}
+	crProject := project.New(c.ProjectDir)
 
-	// Read the package.json file
-	packageJson, err := crProject.PackageJSON()
+	// Generate the plugin.yml file
+	pluginYML, err := build.GeneratePluginYML(crProject, minecraftVersion)
 	if err != nil {
-		return err
+		return fmt.Errorf("generating plugin.yml: %w", err)
 	}
 
-	// Define the plugin.yml details for the plugin
-	pluginYml := &build.PluginYml{
-		MinecraftVersion: minecraftVersion,
-		PackageJSON:      packageJson,
+	// Encode it to stdout
+	enc := yaml.NewEncoder(os.Stdout)
+	enc.SetIndent(2)
+	if err := enc.Encode(pluginYML); err != nil {
+		return fmt.Errorf("encoding plugin.yml: %w", err)
 	}
-	fmt.Println(pluginYml)
-
 	return nil
 }

@@ -52,13 +52,11 @@ func (c *RunCmd) Run() error {
 	}
 
 	// Create the project
-	crProject := project.Project{
-		Dir: c.ProjectDir,
-	}
+	crProject := project.New(c.ProjectDir)
 
 	// Create the build action
 	buildAction := build.BuildAction{
-		Project:          &crProject,
+		Project:          crProject,
 		JarTemplate:      jarTemplate,
 		MinecraftVersion: minecraftVersion,
 		OutputFile:       outputFile,
