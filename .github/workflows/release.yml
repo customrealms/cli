@@ -36,6 +36,8 @@ jobs:
             const fs = require('fs');
             const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
             packageJson.version = '${{ github.event.release.tag_name }}'.replace(/^v/, '');
+            packageJson.scripts['postinstall'] = 'node postinstall.js install';
+            packageJson.scripts['preuninstall'] = 'node postinstall.js uninstall';
             fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2));
 
       - name: Install dependencies
