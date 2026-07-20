@@ -4,7 +4,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/customrealms/cli/internal/minecraft"
+	"github.com/customrealms/cli/pkg/minecraft"
 )
 
 type HttpFetcher struct{}

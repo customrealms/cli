@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/customrealms/cli/internal/minecraft"
-	"github.com/customrealms/cli/internal/project"
+	"github.com/customrealms/cli/pkg/minecraft"
+	"github.com/customrealms/cli/pkg/project"
 )
 
 //go:embed config/webpack.config.js

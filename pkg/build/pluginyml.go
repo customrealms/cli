@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/customrealms/cli/internal/minecraft"
-	"github.com/customrealms/cli/internal/pluginyml"
-	"github.com/customrealms/cli/internal/project"
+	"github.com/customrealms/cli/pkg/minecraft"
+	"github.com/customrealms/cli/pkg/pluginyml"
+	"github.com/customrealms/cli/pkg/project"
 )
 
 const JarMainClass = "io.customrealms.MainPlugin"

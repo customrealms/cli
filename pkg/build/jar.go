@@ -9,9 +9,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/customrealms/cli/internal/minecraft"
-	"github.com/customrealms/cli/internal/pluginyml"
-	"github.com/customrealms/cli/internal/project"
+	"github.com/customrealms/cli/pkg/minecraft"
+	"github.com/customrealms/cli/pkg/pluginyml"
+	"github.com/customrealms/cli/pkg/project"
 	"gopkg.in/yaml.v3"
 )
 

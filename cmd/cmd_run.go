@@ -6,10 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/customrealms/cli/internal/build"
-	"github.com/customrealms/cli/internal/project"
-	"github.com/customrealms/cli/internal/serve"
-	"github.com/customrealms/cli/internal/server"
+	"github.com/customrealms/cli/pkg/build"
+	"github.com/customrealms/cli/pkg/project"
+	"github.com/customrealms/cli/pkg/serve"
+	"github.com/customrealms/cli/pkg/server"
 	"github.com/fsnotify/fsnotify"
 	"golang.org/x/sync/errgroup"
 )

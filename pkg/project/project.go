@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/customrealms/cli/internal/pluginyml"
+	"github.com/customrealms/cli/pkg/pluginyml"
 	"gopkg.in/yaml.v3"
 )
 

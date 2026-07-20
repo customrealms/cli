@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	"github.com/alecthomas/kong"
-	"github.com/customrealms/cli/internal/minecraft"
+	"github.com/customrealms/cli/pkg/minecraft"
 )
 
 var (

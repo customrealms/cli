@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/customrealms/cli/internal/minecraft"
+	"github.com/customrealms/cli/pkg/minecraft"
 )
 
 type cachedFetcher struct {

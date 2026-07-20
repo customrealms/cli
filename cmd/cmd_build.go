@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/customrealms/cli/internal/build"
-	"github.com/customrealms/cli/internal/project"
+	"github.com/customrealms/cli/pkg/build"
+	"github.com/customrealms/cli/pkg/project"
 )
 
 type BuildCmd struct {

@@ -8,8 +8,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/customrealms/cli/internal/minecraft"
-	"github.com/customrealms/cli/internal/server"
+	"github.com/customrealms/cli/pkg/minecraft"
+	"github.com/customrealms/cli/pkg/server"
 	"golang.org/x/sync/errgroup"
 )
 

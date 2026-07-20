@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/customrealms/cli/internal/initialize"
+	"github.com/customrealms/cli/pkg/initialize"
 )
 
 type InitCmd struct {

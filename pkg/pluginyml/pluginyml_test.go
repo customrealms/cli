@@ -5,7 +5,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/customrealms/cli/internal/pluginyml"
+	"github.com/customrealms/cli/pkg/pluginyml"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
