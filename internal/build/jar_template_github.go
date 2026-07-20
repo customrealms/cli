@@ -10,7 +10,7 @@ type GitHubJarTemplate struct{}
 
 func (t *GitHubJarTemplate) Jar() (io.ReadCloser, error) {
 	// Get the JAR url
-	jarUrl := "https://github.com/customrealms/bukkit-runtime/releases/latest/download/bukkit-runtime-1.16.1.jar"
+	jarUrl := "https://github.com/customrealms/bukkit-runtime/releases/latest/download/bukkit-runtime.jar"
 
 	// Download the JAR file
 	fmt.Printf(" -> %s\n", jarUrl)
