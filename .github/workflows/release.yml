@@ -50,8 +50,4 @@ jobs:
             packageJson.version = '${{ steps.get_release.outputs.tag_name }}'.replace(/^v/, '');
             fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2));
 
-      - run: npm ci
-
-      - uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish

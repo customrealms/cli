@@ -40,7 +40,7 @@ func main() {
 // instance. If nothing can be found, it exits the process
 func mustMinecraftVersion(ctx context.Context, versionString string) minecraft.Version {
 	if len(versionString) == 0 {
-		versionString = "1.20.6"
+		versionString = "26.1.2"
 	}
 	minecraftVersion, err := minecraft.LookupVersion(ctx, versionString)
 	if err != nil {
