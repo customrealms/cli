@@ -8,7 +8,7 @@ const fs = require('fs');
 // Mapping from Node's `process.arch` to Golang's GOARCH
 var ARCH_MAPPING = {
     "ia32": "386",
-    "x64": "amd64_v1",
+    "x64": "amd64",
     "arm": "arm",
     "arm64": "arm64"
 };
@@ -20,6 +20,92 @@ var PLATFORM_MAPPING = {
     "win32": "windows",
     "freebsd": "freebsd"
 };
+
+function getPreferredVariantOrder(goarch) {
+    if (goarch === "amd64") {
+        return ["v1", "v2", "v3", "v4"];
+    }
+
+    if (goarch === "arm64") {
+        return ["v8.0", "v8.1", "v8.2", "v9.0"];
+    }
+
+    if (goarch === "386") {
+        return ["sse2", "softfloat"];
+    }
+
+    if (goarch === "arm") {
+        var armVersion = process.config && process.config.variables ? process.config.variables.arm_version : undefined;
+        if (armVersion) {
+            var normalized = String(armVersion);
+            return [normalized, "v" + normalized];
+        }
+
+        return ["7", "v7", "6", "v6", "5", "v5"];
+    }
+
+    return [];
+}
+
+function getArtifactVariant(artifact) {
+    if (!artifact) return undefined;
+    return artifact.goamd64 || artifact.goarm64 || artifact.go386 || artifact.goarm;
+}
+
+function getArtifactBinaryPath(binName) {
+    var artifactsJsonPath = path.join("dist", "artifacts.json");
+    if (!fs.existsSync(artifactsJsonPath)) {
+        throw new Error("Unable to find bundled artifact manifest at " + artifactsJsonPath);
+    }
+
+    var parsedArtifacts;
+    try {
+        parsedArtifacts = JSON.parse(fs.readFileSync(artifactsJsonPath, "utf8"));
+    } catch (error) {
+        throw new Error("Unable to parse bundled artifact manifest: " + error.message);
+    }
+
+    if (!Array.isArray(parsedArtifacts)) {
+        throw new Error("Expected bundled artifact manifest to be an array");
+    }
+
+    var goos = PLATFORM_MAPPING[process.platform];
+    var goarch = ARCH_MAPPING[process.arch];
+    var preferredVariants = getPreferredVariantOrder(goarch);
+
+    var candidates = parsedArtifacts.filter(function (artifact) {
+        if (!artifact || artifact.type !== "Binary") return false;
+        if (artifact.goos !== goos || artifact.goarch !== goarch) return false;
+        if (artifact.name && artifact.name !== binName) return false;
+        return Boolean(artifact.path);
+    });
+
+    if (candidates.length === 0) {
+        throw new Error("No bundled binary artifact found for " + goos + "/" + goarch);
+    }
+
+    candidates.sort(function (a, b) {
+        var variantA = getArtifactVariant(a);
+        var variantB = getArtifactVariant(b);
+        var rankA = preferredVariants.indexOf(variantA);
+        var rankB = preferredVariants.indexOf(variantB);
+        var normalizedRankA = rankA === -1 ? Number.MAX_SAFE_INTEGER : rankA;
+        var normalizedRankB = rankB === -1 ? Number.MAX_SAFE_INTEGER : rankB;
+
+        if (normalizedRankA !== normalizedRankB) {
+            return normalizedRankA - normalizedRankB;
+        }
+
+        return String(a.path).localeCompare(String(b.path));
+    });
+
+    var resolvedPath = candidates[0].path;
+    if (!fs.existsSync(resolvedPath)) {
+        throw new Error("Bundled binary path is missing: " + resolvedPath);
+    }
+
+    return resolvedPath;
+}
 
 async function getInstallationPath() {
 
@@ -141,16 +227,12 @@ async function install(callback) {
     mkdirp.sync(opts.binPath);
     console.info(`Copying the relevant binary for your platform ${process.platform} (${process.arch})`);
 
-    // Map the process platform and arch strings to the Go version
-    const platform = PLATFORM_MAPPING[process.platform];
-    const arch = ARCH_MAPPING[process.arch];
-
-    // Get the path to the binary within the package
-    const src = path.join(
-        'dist',
-        `customrealms-cli_${platform}_${arch}`,
-        opts.binName,
-    );
+    let src;
+    try {
+        src = getArtifactBinaryPath(opts.binName);
+    } catch (error) {
+        return callback(error);
+    }
 
     // Copy the binary to its destination path
     fs.copyFileSync(src, path.join(opts.binPath, opts.binName));
