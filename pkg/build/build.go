@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/customrealms/cli/pkg/minecraft"
 	"github.com/customrealms/cli/pkg/project"
 )
 
@@ -18,10 +17,10 @@ import (
 var webpackConfig string
 
 type BuildAction struct {
-	Project          project.Project
-	JarTemplate      JarTemplate
-	MinecraftVersion minecraft.Version
-	OutputFile       string
+	Project     project.Project
+	JarTemplate JarTemplate
+	ApiVersion  string
+	OutputFile  string
 }
 
 func (a *BuildAction) Run(ctx context.Context) error {
@@ -75,11 +74,10 @@ func (a *BuildAction) Run(ctx context.Context) error {
 
 	// Package the jar file
 	ja := JarAction{
-		Project:          a.Project,
-		JarTemplate:      a.JarTemplate,
-		MinecraftVersion: a.MinecraftVersion,
-		BundleFile:       filepath.Join(webpackOutputDir, "bundle.js"),
-		OutputFile:       a.OutputFile,
+		Project:     a.Project,
+		JarTemplate: a.JarTemplate,
+		BundleFile:  filepath.Join(webpackOutputDir, "bundle.js"),
+		OutputFile:  a.OutputFile,
 	}
 	return ja.Run(ctx)
 }

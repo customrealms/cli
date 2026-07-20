@@ -54,10 +54,10 @@ func (c *RunCmd) Run() error {
 
 	// Create the build action
 	buildAction := build.BuildAction{
-		Project:          crProject,
-		JarTemplate:      jarTemplate,
-		MinecraftVersion: minecraftVersion,
-		OutputFile:       outputFile,
+		Project:     crProject,
+		JarTemplate: jarTemplate,
+		ApiVersion:  minecraftVersion.ApiVersion(),
+		OutputFile:  outputFile,
 	}
 
 	// Run the build action

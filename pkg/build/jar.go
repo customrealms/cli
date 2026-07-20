@@ -9,18 +9,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/customrealms/cli/pkg/minecraft"
 	"github.com/customrealms/cli/pkg/pluginyml"
 	"github.com/customrealms/cli/pkg/project"
 	"gopkg.in/yaml.v3"
 )
 
 type JarAction struct {
-	Project          project.Project
-	JarTemplate      JarTemplate
-	MinecraftVersion minecraft.Version
-	BundleFile       string
-	OutputFile       string
+	Project     project.Project
+	JarTemplate JarTemplate
+	ApiVersion  string
+	BundleFile  string
+	OutputFile  string
 }
 
 func (a *JarAction) Run(ctx context.Context) error {
@@ -64,7 +63,7 @@ func (a *JarAction) Run(ctx context.Context) error {
 	defer pluginCode.Close()
 
 	// Generate the plugin.yml file for the project
-	pluginYML, err := GeneratePluginYML(a.Project, a.MinecraftVersion)
+	pluginYML, err := GeneratePluginYML(a.Project, a.ApiVersion)
 	if err != nil {
 		return fmt.Errorf("generating plugin.yml: %w", err)
 	}

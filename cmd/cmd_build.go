@@ -9,7 +9,7 @@ import (
 
 type BuildCmd struct {
 	ProjectDir      string `name:"project" short:"p" usage:"plugin project directory" optional:""`
-	McVersion       string `name:"mc" usage:"Minecraft version number target" optional:""`
+	ApiVersion      string `name:"mc" usage:"Minecraft version number target" optional:""`
 	TemplateJarFile string `name:"jar" short:"t" usage:"template JAR file" optional:""`
 	OutputFile      string `name:"output" short:"o" usage:"output JAR file path"`
 }
@@ -23,9 +23,6 @@ func (c *BuildCmd) Run() error {
 	if c.ProjectDir == "" {
 		c.ProjectDir, _ = os.Getwd()
 	}
-
-	// Get the Minecraft version
-	minecraftVersion := mustMinecraftVersion(ctx, c.McVersion)
 
 	// Create the JAR template to build with
 	var jarTemplate build.JarTemplate
@@ -42,10 +39,10 @@ func (c *BuildCmd) Run() error {
 
 	// Create the build action
 	buildAction := build.BuildAction{
-		Project:          crProject,
-		JarTemplate:      jarTemplate,
-		MinecraftVersion: minecraftVersion,
-		OutputFile:       c.OutputFile,
+		Project:     crProject,
+		JarTemplate: jarTemplate,
+		ApiVersion:  c.ApiVersion,
+		OutputFile:  c.OutputFile,
 	}
 	return buildAction.Run(ctx)
 }

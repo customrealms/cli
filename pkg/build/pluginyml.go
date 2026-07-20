@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/customrealms/cli/pkg/minecraft"
 	"github.com/customrealms/cli/pkg/pluginyml"
 	"github.com/customrealms/cli/pkg/project"
 )
 
 const JarMainClass = "io.customrealms.MainPlugin"
 
-func GeneratePluginYML(project project.Project, version minecraft.Version) (*pluginyml.Plugin, error) {
+func GeneratePluginYML(project project.Project, apiVersion string) (*pluginyml.Plugin, error) {
 	// Read the package.json file
 	packageJSON, err := project.PackageJSON()
 	if err != nil {
@@ -40,8 +39,7 @@ func GeneratePluginYML(project project.Project, version minecraft.Version) (*plu
 	plugin.Main = JarMainClass
 
 	// Set the Bukkit API version for the plugin
-	if version != nil {
-		apiVersion := version.ApiVersion()
+	if apiVersion != "" {
 		plugin.ApiVersion = &apiVersion
 	}
 
