@@ -5,6 +5,7 @@ on:
 name: Release
 
 permissions:
+  id-token: write
   contents: write
 
 jobs:
@@ -27,9 +28,11 @@ jobs:
         with:
           go-version-file: 'go.mod'
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
 
       - name: Build Go Binaries
         uses: goreleaser/goreleaser-action@v2
