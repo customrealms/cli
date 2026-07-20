@@ -34,9 +34,7 @@ func (c *BuildCmd) Run() error {
 			Filename: c.TemplateJarFile,
 		}
 	} else {
-		jarTemplate = &build.GitHubJarTemplate{
-			MinecraftVersion: minecraftVersion,
-		}
+		jarTemplate = &build.GitHubJarTemplate{}
 	}
 
 	// Create the project

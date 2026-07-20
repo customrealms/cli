@@ -7,43 +7,39 @@ import (
 	"net/http"
 )
 
-type paperMcBuilds struct {
-	Builds []paperMcBuild `json:"builds"`
-}
-
 type paperMcBuild struct {
-	Build     int    `json:"build"`
+	ID        int    `json:"id"`
 	Channel   string `json:"channel"`
-	Downloads struct {
-		Application struct {
-			Name   string `json:"name"`
+	Downloads map[string]struct {
+		Name      string `json:"name"`
+		Checksums struct {
 			Sha256 string `json:"sha256"`
-		} `json:"application"`
+		} `json:"checksums"`
+		Size int64  `json:"size"`
+		URL  string `json:"url"`
 	} `json:"downloads"`
 }
 
 func LookupVersion(ctx context.Context, versionStr string) (Version, error) {
 	// Lookup the version from PaperMC
-	builds, err := downloadJSON[paperMcBuilds](ctx, fmt.Sprintf("https://papermc.io/api/v2/projects/paper/versions/%s/builds", versionStr))
+	builds, err := downloadJSON[[]paperMcBuild](ctx, fmt.Sprintf("https://fill.papermc.io/v3/projects/paper/versions/%s/builds", versionStr))
 	if err != nil {
 		return nil, fmt.Errorf("download builds list: %w", err)
 	}
-	if builds == nil || len(builds.Builds) == 0 {
+	if builds == nil || len(*builds) == 0 {
 		return nil, fmt.Errorf("no builds found for version %s", versionStr)
 	}
 
-	// The last entry is the latest build
-	build := builds.Builds[len(builds.Builds)-1]
-	version := &paperMcVersion{versionStr, build.Build}
+	// The latest entry is the latest build
+	build := (*builds)[0]
 
-	// Check that the version has a downloadable plugin JAR
-	ok, err := checkHttpOK(ctx, version.PluginJarUrl())
-	if err != nil {
-		return nil, fmt.Errorf("check plugin jar url: %w", err)
-	}
+	// Get the server jar URL for the build
+	serverJarDownload, ok := build.Downloads["server:default"]
 	if !ok {
-		return nil, fmt.Errorf("no customrealms bukkit-runtime found for version %s", versionStr)
+		return nil, fmt.Errorf("no server jar found for build %d", build.ID)
 	}
+
+	version := &paperMcVersion{versionStr, build.ID, serverJarDownload.URL}
 	return version, nil
 }
 

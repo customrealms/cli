@@ -5,5 +5,4 @@ type Version interface {
 	ApiVersion() string
 	ServerJarType() string
 	ServerJarUrl() string
-	PluginJarUrl() string
 }

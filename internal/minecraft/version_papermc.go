@@ -1,13 +1,13 @@
 package minecraft
 
 import (
-	"fmt"
 	"strings"
 )
 
 type paperMcVersion struct {
-	version    string
-	paperBuild int
+	version      string
+	paperBuild   int
+	serverJarUrl string
 }
 
 func (v *paperMcVersion) String() string {
@@ -24,15 +24,5 @@ func (v *paperMcVersion) ServerJarType() string {
 }
 
 func (v *paperMcVersion) ServerJarUrl() string {
-	return fmt.Sprintf(
-		"https://papermc.io/api/v2/projects/paper/versions/%s/builds/%d/downloads/paper-%s-%d.jar",
-		v.version,
-		v.paperBuild,
-		v.version,
-		v.paperBuild,
-	)
-}
-
-func (v *paperMcVersion) PluginJarUrl() string {
-	return fmt.Sprintf("https://github.com/customrealms/bukkit-runtime/releases/latest/download/bukkit-runtime-%s.jar", v.version)
+	return v.serverJarUrl
 }

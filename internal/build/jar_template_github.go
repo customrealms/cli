@@ -4,18 +4,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/customrealms/cli/internal/minecraft"
 )
 
-type GitHubJarTemplate struct {
-	MinecraftVersion minecraft.Version
-}
+type GitHubJarTemplate struct{}
 
 func (t *GitHubJarTemplate) Jar() (io.ReadCloser, error) {
-
 	// Get the JAR url
-	jarUrl := t.MinecraftVersion.PluginJarUrl()
+	jarUrl := "https://github.com/customrealms/bukkit-runtime/releases/latest/download/bukkit-runtime-1.16.1.jar"
 
 	// Download the JAR file
 	fmt.Printf(" -> %s\n", jarUrl)
@@ -26,5 +21,4 @@ func (t *GitHubJarTemplate) Jar() (io.ReadCloser, error) {
 
 	// Return the response body
 	return res.Body, nil
-
 }
