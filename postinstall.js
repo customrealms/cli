@@ -2,8 +2,13 @@
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 const path = require('path');
-const mkdirp = require('mkdirp');
 const fs = require('fs');
+
+function mkdirp(path) {
+    if (!fs.existsSync(path)) {
+        fs.mkdirSync(path, { recursive: true });
+    }
+}
 
 // Mapping from Node's `process.arch` to Golang's GOARCH
 var ARCH_MAPPING = {
@@ -107,7 +112,7 @@ function getArtifactBinaryPath(binName) {
     return resolvedPath;
 }
 
-async function getInstallationPath() {
+function getInstallationPath() {
 
     // `npm bin` will output the path where binary files should be installed
 
@@ -129,15 +134,15 @@ async function getInstallationPath() {
         dir = value.trim();
     }
 
-    await mkdirp(dir);
+    mkdirp(dir);
     return dir;
 }
 
-async function verifyAndPlaceBinary(binName, binPath, callback) {
+function verifyAndPlaceBinary(binName, binPath, callback) {
     if (!fs.existsSync(path.join(binPath, binName))) return callback('Downloaded binary does not contain the binary specified in configuration - ' + binName);
 
     // Get installation path for executables under node
-    const installationPath = await getInstallationPath();
+    const installationPath = getInstallationPath();
     // Copy the executable to the path
     fs.rename(path.join(binPath, binName), path.join(installationPath, binName),(err)=>{
         if(!err){
@@ -220,11 +225,11 @@ function parsePackageJson() {
  *  See: https://docs.npmjs.com/files/package.json#bin
  */
 var INVALID_INPUT = "Invalid inputs";
-async function install(callback) {
+function install(callback) {
 
     var opts = parsePackageJson();
     if (!opts) return callback(INVALID_INPUT);
-    mkdirp.sync(opts.binPath);
+    mkdirp(opts.binPath);
     console.info(`Copying the relevant binary for your platform ${process.platform} (${process.arch})`);
 
     let src;
@@ -237,13 +242,13 @@ async function install(callback) {
     // Copy the binary to its destination path
     fs.copyFileSync(src, path.join(opts.binPath, opts.binName));
     // await execShellCommand(`cp ${src} ${opts.binPath}/${opts.binName}`);
-    await verifyAndPlaceBinary(opts.binName, opts.binPath, callback);
+    verifyAndPlaceBinary(opts.binName, opts.binPath, callback);
 }
 
-async function uninstall(callback) {
+function uninstall(callback) {
     var opts = parsePackageJson();
         try {
-            const installationPath = await getInstallationPath();
+            const installationPath = getInstallationPath();
             fs.unlink(path.join(installationPath, opts.binName),(err)=>{
                 if(err){
                     return callback(err);

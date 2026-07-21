@@ -116,9 +116,14 @@ func WriteJarFile(
 			continue
 		}
 
+		// Skip directories
+		if f.FileInfo().IsDir() {
+			continue
+		}
+
 		// Copy the rest
 		if err := zw.Copy(f); err != nil {
-			return err
+			return fmt.Errorf("copying file %s: %w", f.Name, err)
 		}
 
 	}

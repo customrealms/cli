@@ -2,7 +2,6 @@ package build
 
 import (
 	"context"
-	_ "embed"
 	"fmt"
 	"math/rand"
 	"os"
@@ -11,10 +10,8 @@ import (
 	"time"
 
 	"github.com/customrealms/cli/pkg/project"
+	"github.com/evanw/esbuild/pkg/api"
 )
-
-//go:embed config/webpack.config.js
-var webpackConfig string
 
 type BuildAction struct {
 	Project     project.Project
@@ -24,22 +21,16 @@ type BuildAction struct {
 }
 
 func (a *BuildAction) Run(ctx context.Context) error {
-	// Create the temp directory for the code output from Webpack.
-	// The code will be put into "bundle.js" in that directory
-	webpackOutputDir := filepath.Join(
+	// Create a temporary directory for the output bundle.
+	// The code will be written to "bundle.js" in that directory.
+	buildOutputDir := filepath.Join(
 		os.TempDir(),
 		fmt.Sprintf("cr-build-%d-%d", time.Now().Unix(), rand.Uint32()),
 	)
-	if err := os.MkdirAll(webpackOutputDir, 0777); err != nil {
-		return fmt.Errorf("creating webpack output dir: %w", err)
+	if err := os.MkdirAll(buildOutputDir, 0777); err != nil {
+		return fmt.Errorf("creating build output dir: %w", err)
 	}
-	defer os.RemoveAll(webpackOutputDir)
-
-	// Write the webpack configuration file temporarily
-	webpackConfigFile := filepath.Join(webpackOutputDir, "webpack.config.js")
-	if err := os.WriteFile(webpackConfigFile, []byte(webpackConfig), 0777); err != nil {
-		return fmt.Errorf("write webpack config file: %w", err)
-	}
+	defer os.RemoveAll(buildOutputDir)
 
 	// Parse the plugin.yml file
 	pluginYML, err := a.Project.PluginYML()
@@ -48,7 +39,7 @@ func (a *BuildAction) Run(ctx context.Context) error {
 	}
 
 	fmt.Println("============================================================")
-	fmt.Println("Bundling JavaScript code using Webpack")
+	fmt.Println("Bundling JavaScript code using esbuild")
 	fmt.Println("============================================================")
 
 	// Determine the entrypoint for the TypeScript project
@@ -59,15 +50,24 @@ func (a *BuildAction) Run(ctx context.Context) error {
 		entrypoint = "./src/main.ts"
 	}
 
-	// Build the local directory
-	err = a.Project.Exec(ctx, "npx", "webpack-cli",
-		"--mode=production",
-		"-o", webpackOutputDir,
-		"-c", webpackConfigFile,
-		"--entry", entrypoint,
-	)
-	if err != nil {
-		return fmt.Errorf("run webpack: %w", err)
+	// Build the local directory using esbuild's Go API.
+	result := api.Build(api.BuildOptions{
+		AbsWorkingDir:     a.Project.Dir(),
+		EntryPoints:       []string{entrypoint},
+		Outfile:           filepath.Join(buildOutputDir, "bundle.js"),
+		Bundle:            true,
+		MinifyWhitespace:  true,
+		MinifyIdentifiers: true,
+		MinifySyntax:      true,
+		TreeShaking:       api.TreeShakingTrue,
+		Platform:          api.PlatformBrowser,
+		Format:            api.FormatIIFE,
+		Target:            api.ES2015,
+		LogLevel:          api.LogLevelInfo,
+		Write:             true,
+	})
+	if len(result.Errors) > 0 {
+		return fmt.Errorf("bundle code with esbuild: %s", result.Errors[0].Text)
 	}
 
 	fmt.Println()
@@ -76,7 +76,7 @@ func (a *BuildAction) Run(ctx context.Context) error {
 	ja := JarAction{
 		Project:     a.Project,
 		JarTemplate: a.JarTemplate,
-		BundleFile:  filepath.Join(webpackOutputDir, "bundle.js"),
+		BundleFile:  filepath.Join(buildOutputDir, "bundle.js"),
 		OutputFile:  a.OutputFile,
 	}
 	return ja.Run(ctx)

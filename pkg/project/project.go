@@ -16,6 +16,8 @@ import (
 type Project interface {
 	// Exec executes a command in the project directory.
 	Exec(ctx context.Context, name string, args ...string) error
+	// Dir returns the project directory.
+	Dir() string
 	// PackageJSON reads the package.json file contents from the project directory.
 	// If the file does not exist, it returns nil.
 	PackageJSON() (*PackageJSON, error)
@@ -31,6 +33,10 @@ func New(dir string) Project {
 
 type project struct {
 	dir string
+}
+
+func (p *project) Dir() string {
+	return p.dir
 }
 
 func (p *project) Exec(ctx context.Context, name string, args ...string) error {
