@@ -1,20 +1,19 @@
 package build
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 )
 
 type GitHubJarTemplate struct{}
 
-func (t *GitHubJarTemplate) Jar() (io.ReadCloser, error) {
-	// Get the JAR url
-	jarUrl := "https://github.com/customrealms/bukkit-runtime/releases/latest/download/bukkit-runtime.jar"
+func (t *GitHubJarTemplate) URL() string {
+	return "https://github.com/customrealms/bukkit-runtime/releases/latest/download/bukkit-runtime.jar"
+}
 
+func (t *GitHubJarTemplate) Jar() (io.ReadCloser, error) {
 	// Download the JAR file
-	fmt.Printf(" -> %s\n", jarUrl)
-	res, err := http.Get(jarUrl)
+	res, err := http.Get(t.URL())
 	if err != nil {
 		return nil, err
 	}

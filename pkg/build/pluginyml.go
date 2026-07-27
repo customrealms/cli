@@ -3,7 +3,8 @@ package build
 import (
 	"errors"
 	"fmt"
-	"log"
+	"io"
+	"os"
 
 	"github.com/customrealms/cli/pkg/pluginyml"
 	"github.com/customrealms/cli/pkg/project"
@@ -11,7 +12,11 @@ import (
 
 const JarMainClass = "io.customrealms.MainPlugin"
 
-func GeneratePluginYML(project project.Project, apiVersion string) (*pluginyml.Plugin, error) {
+func GeneratePluginYML(project project.Project, apiVersion string, logWriter io.Writer) (*pluginyml.Plugin, error) {
+	if logWriter == nil {
+		logWriter = os.Stdout
+	}
+
 	// Read the package.json file
 	packageJSON, err := project.PackageJSON()
 	if err != nil {
@@ -49,12 +54,12 @@ func GeneratePluginYML(project project.Project, apiVersion string) (*pluginyml.P
 		if plugin.Version == "" && packageJSON.Version != "" {
 			plugin.Version = packageJSON.Version
 		} else if plugin.Version == "" && packageJSON.Version == "" {
-			log.Println("No version found in plugin.yml or package.json. Consider adding a version to package.json.")
-			log.Println("Using version '0.0.0' as a fallback.")
+			fmt.Fprintln(logWriter, "No version found in plugin.yml or package.json. Consider adding a version to package.json.")
+			fmt.Fprintln(logWriter, "Using version '0.0.0' as a fallback.")
 			plugin.Version = "0.0.0"
 		} else if plugin.Version != packageJSON.Version {
-			log.Println("Version mismatch between plugin.yml and package.json. Consider removing `version` from plugin.yml.")
-			log.Printf("Using version '%s' from plugin.yml", plugin.Version)
+			fmt.Fprintln(logWriter, "Version mismatch between plugin.yml and package.json. Consider removing `version` from plugin.yml.")
+			fmt.Fprintf(logWriter, "Using version '%s' from plugin.yml", plugin.Version)
 		}
 	}
 

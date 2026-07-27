@@ -24,7 +24,7 @@ func (c *YmlCmd) Run() error {
 	crProject := project.New(c.ProjectDir)
 
 	// Generate the plugin.yml file
-	pluginYML, err := build.GeneratePluginYML(crProject, c.ApiVersion)
+	pluginYML, err := build.GeneratePluginYML(crProject, c.ApiVersion, os.Stdout)
 	if err != nil {
 		return fmt.Errorf("generating plugin.yml: %w", err)
 	}

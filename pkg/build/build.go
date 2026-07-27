@@ -3,6 +3,7 @@ package build
 import (
 	"context"
 	"fmt"
+	"io"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -18,9 +19,15 @@ type BuildAction struct {
 	JarTemplate JarTemplate
 	ApiVersion  string
 	OutputFile  string
+	LogWriter   io.Writer
 }
 
 func (a *BuildAction) Run(ctx context.Context) error {
+	// Set the log writer
+	if a.LogWriter == nil {
+		a.LogWriter = os.Stdout
+	}
+
 	// Create a temporary directory for the output bundle.
 	// The code will be written to "bundle.js" in that directory.
 	buildOutputDir := filepath.Join(
@@ -38,9 +45,9 @@ func (a *BuildAction) Run(ctx context.Context) error {
 		return fmt.Errorf("parse plugin.yml: %w", err)
 	}
 
-	fmt.Println("============================================================")
-	fmt.Println("Bundling JavaScript code using esbuild")
-	fmt.Println("============================================================")
+	fmt.Fprintln(a.LogWriter, "============================================================")
+	fmt.Fprintln(a.LogWriter, "Bundling JavaScript code using esbuild")
+	fmt.Fprintln(a.LogWriter, "============================================================")
 
 	// Determine the entrypoint for the TypeScript project
 	var entrypoint string
@@ -70,7 +77,7 @@ func (a *BuildAction) Run(ctx context.Context) error {
 		return fmt.Errorf("bundle code with esbuild: %s", result.Errors[0].Text)
 	}
 
-	fmt.Println()
+	fmt.Fprintln(a.LogWriter, "")
 
 	// Package the jar file
 	ja := JarAction{
@@ -78,6 +85,7 @@ func (a *BuildAction) Run(ctx context.Context) error {
 		JarTemplate: a.JarTemplate,
 		BundleFile:  filepath.Join(buildOutputDir, "bundle.js"),
 		OutputFile:  a.OutputFile,
+		LogWriter:   a.LogWriter,
 	}
 	return ja.Run(ctx)
 }
