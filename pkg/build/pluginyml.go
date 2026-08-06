@@ -63,6 +63,21 @@ func GeneratePluginYML(project project.Project, apiVersion string, logWriter io.
 		}
 	}
 
+	// Add libraries needed for GraalJS
+	plugin.Libraries = append(plugin.Libraries,
+		"org.graalvm.polyglot:polyglot:24.1.2",
+		"org.graalvm.sdk:collections:24.1.2",
+		"org.graalvm.sdk:nativeimage:24.1.2",
+		"org.graalvm.sdk:word:24.1.2",
+		"org.graalvm.js:js-language:24.1.2",
+		"org.graalvm.regex:regex:24.1.2",
+		"org.graalvm.truffle:truffle-api:24.1.2",
+		"org.graalvm.shadowed:icu4j:24.1.2",
+		"org.graalvm.truffle:truffle-runtime:24.1.2",
+		"org.graalvm.sdk:jniutils:24.1.2",
+		"org.graalvm.truffle:truffle-compiler:24.1.2",
+	)
+
 	// Return the plugin yml
 	return plugin, nil
 }
