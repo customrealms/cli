@@ -73,7 +73,7 @@ func GeneratePluginYML(project project.Project, apiVersion string, logWriter io.
 		"org.graalvm.regex:regex:24.1.2",
 		"org.graalvm.truffle:truffle-api:24.1.2",
 		"org.graalvm.shadowed:icu4j:24.1.2",
-		"org.graalvm.truffle:truffle-runtime:24.1.2",
+		// "org.graalvm.truffle:truffle-runtime:24.1.2",
 		"org.graalvm.sdk:jniutils:24.1.2",
 		"org.graalvm.truffle:truffle-compiler:24.1.2",
 	)
