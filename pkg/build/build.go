@@ -69,7 +69,7 @@ func (a *BuildAction) Run(ctx context.Context) error {
 		TreeShaking:       api.TreeShakingTrue,
 		Platform:          api.PlatformBrowser,
 		Format:            api.FormatIIFE,
-		Target:            api.ES2015,
+		Target:            api.ES2022,
 		LogLevel:          api.LogLevelInfo,
 		Write:             true,
 	})
