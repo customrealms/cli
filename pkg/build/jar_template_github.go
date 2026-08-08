@@ -8,7 +8,7 @@ import (
 type GitHubJarTemplate struct{}
 
 func (t *GitHubJarTemplate) URL() string {
-	return "https://github.com/customrealms/bukkit-runtime/releases/latest/download/bukkit-runtime.jar"
+	return "https://github.com/customrealms/runtime/releases/latest/download/runtime.jar"
 }
 
 func (t *GitHubJarTemplate) Jar() (io.ReadCloser, error) {
